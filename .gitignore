@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+
+# Critical-thinking workspace artifacts (per-session receipts;
+# force-add a receipt deliberately when it should be kept)
+.ct/
+
+# Agent-local config (the .claude/skills symlink IS tracked)
+.claude/settings.local.json
+CLAUDE.local.md
+.mcp.json
+
+# macOS
+.DS_Store

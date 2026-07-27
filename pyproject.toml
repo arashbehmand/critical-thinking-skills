@@ -1,0 +1,39 @@
+[project]
+name = "critical-thinking-mcp"
+version = "0.1.0"
+description = "Critical-thinking recipes for LLM agents plus a pure-math MCP server that aggregates judgments into decisions"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = ["fastmcp>=2.0"]
+
+[project.scripts]
+ctmcp = "ctmcp.server.app:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.25", "ruff>=0.8", "mypy>=1.13"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ctmcp"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+# The math vocabulary (τ, σ) mirrors the argumentation literature; suppress
+# ambiguous-unicode warnings, same as argLLM.
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+files = ["src", "tests"]
