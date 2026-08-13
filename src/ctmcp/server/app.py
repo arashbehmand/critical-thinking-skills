@@ -8,26 +8,34 @@ so a reader can check it by hand. Validation errors are ToolErrors ("call
 differently"); there is no server state of any kind.
 """
 
+from pathlib import Path
 from typing import Any, Literal
 
 from fastmcp import FastMCP
 from fastmcp.exceptions import ToolError
+from fastmcp.server.providers.skills import SkillsDirectoryProvider
 from pydantic import BaseModel, Field
 
 from ctmcp.core import ach, brier, fermi, panel, qbaf
 
 PURE = {"readOnlyHint": True, "idempotentHint": True}
+SKILLS_DIRECTORY = Path(__file__).resolve().parents[3] / "skills"
 
 mcp: FastMCP[None] = FastMCP(
     name="critical-thinking-mcp",
     instructions=(
-        "Pure mathematical aggregators for critical-thinking work: they turn judgments "
-        "you collected (ideally from fresh subagents that never saw your lean) into "
-        "decisions, deterministically. No tool here calls an LLM or keeps state. "
+        "Critical-thinking recipes plus pure mathematical aggregators. Start by listing "
+        "the skill:// resources to discover the practices, then read the chosen "
+        "SKILL.md (and supporting files) before calling a tool. The tools are only the "
+        "deterministic arithmetic backends: the recipes supply the method, prompts, "
+        "and receipt workflow. They turn judgments you collected (ideally from fresh "
+        "subagents that never saw your lean) into decisions. No tool here calls an LLM "
+        "or keeps state. "
         "Honesty rule: these tools aggregate whatever they are given — when reporting "
         "results, label the inputs (self-assigned vs subagent-elicited)."
     ),
 )
+mcp.add_provider(SkillsDirectoryProvider(roots=SKILLS_DIRECTORY))
 
 
 class QbafArgument(BaseModel):

@@ -33,9 +33,12 @@ Register the math server with Claude Code:
 claude mcp add critical-thinking -- uv run --directory /path/to/critical-thinking-mcp ctmcp
 ```
 
-Use the skills: they are live inside this repo (`.claude/skills` → `skills/`); for other
-projects, copy the skill directories you want into that project's `.claude/skills/` or
-into `~/.claude/skills/` for global use.
+The MCP server also advertises all fourteen recipes as `skill://` resources. An
+MCP client can list `skill://<name>/SKILL.md` resources to discover the practices,
+then read a chosen one (and its supporting files) before calling its math tools. They
+remain live inside this repo too (`.claude/skills` → `skills/`); for hosts without MCP
+skill-resource support, copy the skill directories into that project's `.claude/skills/`
+or into `~/.claude/skills/` for global use.
 
 ## Tools (all pure functions)
 

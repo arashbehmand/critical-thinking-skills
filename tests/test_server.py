@@ -15,6 +15,23 @@ EXPECTED_TOOLS = {
     "combine_fermi",
 }
 
+EXPECTED_SKILLS = {
+    "critical-thinking",
+    "ct-ach",
+    "ct-argument-map",
+    "ct-assumption-audit",
+    "ct-calibration",
+    "ct-consistency-log",
+    "ct-definition-pin",
+    "ct-evidence-ledger",
+    "ct-panel",
+    "ct-premortem",
+    "ct-question-tree",
+    "ct-reformat",
+    "ct-steelman",
+    "ct-verdict-gate",
+}
+
 
 async def test_all_tools_registered_and_pure() -> None:
     async with Client(mcp) as client:
@@ -24,6 +41,21 @@ async def test_all_tools_registered_and_pure() -> None:
             assert tool.annotations is not None, tool.name
             assert tool.annotations.readOnlyHint is True, tool.name
             assert tool.annotations.idempotentHint is True, tool.name
+
+
+async def test_all_skills_are_advertised_as_resources() -> None:
+    async with Client(mcp) as client:
+        resources = await client.list_resources()
+        uris = {str(resource.uri) for resource in resources}
+        expected_uris = {
+            f"skill://{skill}/{file_name}"
+            for skill in EXPECTED_SKILLS
+            for file_name in ("SKILL.md", "_manifest")
+        }
+        assert expected_uris <= uris
+
+        skill = await client.read_resource("skill://ct-ach/SKILL.md")
+        assert "# ACH — analysis of competing hypotheses" in skill[0].text
 
 
 async def test_evaluate_qbaf_end_to_end() -> None:
