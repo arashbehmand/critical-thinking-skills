@@ -1,6 +1,6 @@
 [project]
 name = "critical-thinking-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "Critical-thinking recipes for LLM agents plus a pure-math MCP server that aggregates judgments into decisions"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -21,7 +21,7 @@ packages = ["src/ctmcp"]
 
 [tool.ruff]
 line-length = 100
-src = ["src", "tests"]
+src = ["src", "tests", "hooks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
@@ -36,4 +36,7 @@ testpaths = ["tests"]
 [tool.mypy]
 python_version = "3.13"
 strict = true
-files = ["src", "tests"]
+files = ["src", "tests", "hooks"]
+# bench/ and its test file are untracked local-only measurement for now (.gitignore), so
+# they are excluded here — a fresh clone has neither, and mypy must still come up green.
+exclude = ["tests/test_bench\\.py"]

@@ -52,9 +52,10 @@ For "how many / how much" with no direct source:
 
 1. Decompose the quantity into 3–6 **factors** that multiply or divide
    (`answers = population × rate ÷ capacity …`).
-2. Each factor gets a `[low, high]` range — from a source when possible, otherwise from
-   a fresh subagent asked for the range only (never your target number: anchoring flows
-   downhill).
+2. Each factor gets a `[low, high]` range **and a `pedigree`** — `sourced` when you
+   looked it up, `elicited` when a fresh subagent supplied the range (asked for the range
+   only, never your target number: anchoring flows downhill), `given` when it was handed
+   to you, `invented` when you made it up.
 3. Combine with the bundled script — never in your head:
 
    ```sh
@@ -62,11 +63,20 @@ For "how many / how much" with no direct source:
    ```
 
    Input: `{"factors": [{"name": "US households", "low": 1.2e8, "high": 1.4e8,
-   "op": "multiply"}, …]}` (first factor's `op` is ignored; `divide` uses interval
-   division). Output: combined `[low, high]`, a geometric-mean point estimate, and each
-   factor's span ratio.
+   "op": "multiply", "pedigree": "sourced"}, …]}` (first factor's `op` is ignored;
+   `divide` uses interval division). Output: combined `[low, high]`, a geometric-mean
+   point estimate, each factor's span ratio, and which factors are load-bearing.
 4. **Report the range, not just the point.** The script names the widest factor — that is
    where an hour of research buys the most narrowing.
+
+**The script refuses an invented load-bearing factor.** Load-bearing is mechanical, not a
+judgment call: a factor whose `log10(high/low)` share of the total is at or above the
+average, or that is stated as a point (`low == high`), which asserts a precision nobody
+sourced. The measure is *uncertainty contributed*, not size — the census-sized multiplier
+is the one somebody looked up; the guessed share is the one carrying a 3× range. When it
+refuses, go get the range: that is the whole instruction. Do not relabel the factor to get
+past the gate — `invented` is an honest answer, and an estimate with a hole in it reported
+as a hole is worth more than a decimal nobody can defend.
 
 ## Integrity rules
 

@@ -39,8 +39,10 @@ different model family or a human.
 ## 3. Script arithmetic
 
 Combining numbers — scores, counts, ranges, probabilities — is done by the bundled
-scripts (`fermi.py`, `ach_score.py`, `aggregate.py`, `brier.py`), never in prose. Each
-script prints the rule it applied so a reader can check it by hand.
+scripts (`fermi.py`, `ach_score.py`, `aggregate.py`, `brier.py`, `origins.py`, `bag.py`), never in
+prose. Each script prints the rule it applied so a reader can check it by hand. Counting
+sources is arithmetic too: `origins.py` reports **distinct origins**, and a citation count
+that never drops below the document count means the collapse never ran.
 
 - *Failure mode closed:* holistic in-head aggregation, which is where noise and
   motivated rounding live.
@@ -55,9 +57,14 @@ registered, the same rules are also available as pure MCP tools (`evaluate_qbaf`
 
 ## 4. Append-only ledgers
 
-Ledger files (`evidence--*.jsonl`, `commitments--*.jsonl`, `predictions.jsonl`) are
-append-only. A correction is a new entry with `supersedes: <id>` — the superseded line
-stays. Editing history destroys the record's meaning.
+Ledger files (`evidence--*.jsonl`, `commitments--*.jsonl`, `entailment--*.jsonl`,
+`predictions.jsonl`) are append-only. A correction is a new entry with `supersedes: <id>`
+— the superseded line stays. Editing history destroys the record's meaning.
+
+Retraction is not deletion. In `commitments--*.jsonl`, superseding an entry marks every
+entry that *depends on* it `OUT`, transitively: a conclusion resting on a withdrawn
+premise looks identical to a correct one, which is why the walk is mechanical and
+deliberately over-marks when edges are missing.
 
 - *Failure mode closed:* quiet retroactive harmonizing — the record always agreeing with
   the present.
@@ -69,3 +76,17 @@ sweep, a contaminated prompt, or an edited ledger line. When an act's value depe
 guarantee, the skill's "Limits" section names the machinery that would provide it
 (validated structure, server-side elicitation, immutable stores, harness hooks). Do not
 present a skill-kept record with the authority of a machine-kept one; label which it is.
+
+**A receipt is evidence that a receipt was written, not that the procedure ran.** An
+artifact can be produced without its process, and producing it is cheaper than running
+the procedure that should have produced it — a matrix can be filled in one lawyerly
+breath. Observability is necessary and not sufficient, so "the act left an artifact" is
+where the audit starts, not where it ends.
+
+**Gate over label.** Where a check is self-administered — which is most of them — prefer
+the form that *refuses* over the form that *labels*. `NO_REFERENCE_CLASS` stops the
+pipeline and names what is missing; "grade D — unsourced" lets the value flow onward
+wearing a disclaimer. Labels are useful and they do not stop a motivated actor, because
+structure persuades independently of correctness and a disclaimer beside a number is read
+as care rather than as a warning. Where a script refuses, the fix is to go get the
+quantity — never to relabel the input to get past the gate.

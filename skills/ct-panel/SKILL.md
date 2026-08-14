@@ -21,12 +21,20 @@ draws, arithmetic in the middle, and the spread reported instead of laundered.
    the scale; if you want diverse lenses, that is a different act (run panels per lens
    and report them separately).
 3. **Extract the `ANSWER:` lines** verbatim.
-4. **Aggregate mechanically — never in your head:**
+4. **Aggregate mechanically — never in your head.** Name who supplied each draw, and for
+   numeric panels where the numbers came from:
 
    ```sh
-   python3 skills/ct-panel/scripts/aggregate.py --mode numeric 6 7 4 7 5
-   python3 skills/ct-panel/scripts/aggregate.py --mode vote A B A A C
+   python3 skills/ct-panel/scripts/aggregate.py --mode numeric \
+     --source opus,opus,sonnet,opus,human --pedigree elicited 6 7 4 7 5
+   python3 skills/ct-panel/scripts/aggregate.py --mode vote --source opus A B A A C
    ```
+
+   `--source` and `--pedigree` take one value for the whole panel, or one per draw
+   comma-separated. An invented draw **at the median position** is refused — that is the
+   only place it could move the headline. An invented outlier the median already absorbs
+   computes and is stamped, because the median is exactly the instrument that neutralises
+   a wild draw; refusing there too would be theatre.
 
 5. **Read the disagreement flag before the headline number.** High spread or a split
    vote means the question is underspecified (→ `ct-definition-pin`, then rerun) or
@@ -38,6 +46,11 @@ draws, arithmetic in the middle, and the spread reported instead of laundered.
 Always: *"panel of N, median X, range [a, b]"* — never a bare X. The spread is the
 honesty; a stakeholder who sees `7` decides differently than one who sees
 `7 (panel range 4–9)`.
+
+Carry the script's `Panel:` line too. Five draws from one model and three models plus a
+human must not read alike, and only the composition line tells them apart: *"panel of 5
+from opus×5 — cancels noise, not shared bias"* is a different claim from *"panel of 5
+from opus×3, sonnet, human — 3 independent sources"*.
 
 ## Integrity rules
 
@@ -53,7 +66,10 @@ honesty; a stakeholder who sees `7` decides differently than one who sees
 
 A panel of one model cancels noise, **not shared bias** — the median of five answers
 wrong in the same direction is still wrong. For stakes, add a panelist from a different
-model family or a human. And nothing proves all draws were reported: machinery would be
+model family or a human. The `--source` tag moves that caveat out of prose and into the
+output, which is the part a skill can actually do; it does not make the tags true, and a
+panel labelled `sonnet` that was five more of the same is a lie the script will faithfully
+print. And nothing proves all draws were reported: machinery would be
 a sampling service that logs every draw at the boundary (the shape argLLM's sampling
 adapter already has — its concurrency semaphore and call log live server-side precisely
 so the pipeline cannot quietly resample). See `docs/critical-thinking-whitepaper.md`.

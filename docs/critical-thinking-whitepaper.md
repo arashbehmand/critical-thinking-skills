@@ -2,7 +2,7 @@
 
 **A critical-thinking skill set, and the line where skills end and machinery begins**
 
-*White paper v1.1 · critical-thinking-mcp project · July 2026*
+*White paper v1.2 · critical-thinking-mcp project · August 2026*
 
 ---
 
@@ -13,7 +13,7 @@ from human thinking: writing intermediate steps down. This paper argues that
 chain-of-thought was the first item taken from a much longer, better-tested library —
 the critical-thinking practices that human sciences have validated over seventy years —
 and that the rest of the library can now be systematically translated for LLM agents.
-We catalog fourteen critical-thinking *acts*, derive each from established findings in
+We catalog sixteen critical-thinking *acts*, derive each from established findings in
 cognitive science, and translate them into agent capabilities. The central design
 question is the delivery vehicle. We show that the acts split cleanly along one line —
 **does the act still work when the model is being a lawyer?** Acts that survive
@@ -21,11 +21,16 @@ motivated reasoning ship as *skills* (procedures, templates, and small determini
 scripts loaded into context). Acts whose value depends on a *guarantee* — validated
 structure, judgment sourcing from uncontaminated contexts, tamper-evident records,
 enforced gates — need *machinery*: code that runs outside the model's control. We ship
-the skill tier as fourteen working skills accompanying this paper, classify every act
+the skill tier as sixteen working skills accompanying this paper, classify every act
 across three tiers (skill / harness / service), and present the argLLM server — an
 implementation of Argumentative LLMs (Freedman et al. 2024) — as the worked example of
-the machinery tier. Transparency is not an added feature of this architecture but its
-by-product: every act leaves an artifact, and the artifacts are the audit trail.
+the machinery tier. Transparency is a by-product of this architecture rather than an
+added feature — every act leaves an artifact, and the artifacts are the audit trail —
+but only up to a limit we now state plainly: **an artifact can be produced without its
+process, so a receipt is evidence that a receipt was written, not that the procedure
+ran.** Observability is necessary and not sufficient, which is why this revision adds a
+fourth guarantee, a measurement designed to quantify the gap, and a preference for checks
+that *refuse* over checks that *label*.
 
 ---
 
@@ -179,6 +184,19 @@ usually true about thinking; what externalizing/mechanizing/contesting it buys.*
     those reasons. A tree of pro/con arguments with elicited base scores; the verdict
     computed from the structure by gradual semantics; every part editable, with
     automatic re-evaluation (Freedman et al. 2024).
+15. **Entailment check.** A source can be genuinely relevant to a claim it does not
+    support, and repetition reads as corroboration. Ask a fresh context the narrow
+    question — does this text *entail* this claim, *contradict* it, or is it
+    *insufficient*? — record the supporting span, and collapse sources by origin before
+    counting, so syndication and quoting chains stop inflating the count. Report distinct
+    origins, never document counts.
+
+16. **Ensemble of perspectives.** One pass sees everything and commits once; splitting
+    the evidence down to one item per mind buys independence by destroying competence,
+    and independent nonsense does not average into sense. Bag it instead, as a random
+    forest does: each fresh mind gets the whole question and a random *subset* of the
+    evidence, votes aggregate mechanically, and permutation importance over the subsets
+    reports which evidence the verdict actually rests on.
 
 ## 4. Two delivery vehicles — and a test for choosing
 
@@ -207,7 +225,12 @@ Three structural gaps, each an LLM re-instantiation of F8's "awareness doesn't w
    in one lawyerly breath: the table exists; the independent rating never happened.
    Artifact and process have come apart — the checklist has been pencil-whipped.
    Machinery binds them: in argLLM there is no way to get a base score into the tree
-   except through an actual fresh-context elicitation.
+   except through an actual fresh-context elicitation. This one generalises past the
+   skill tier and is stated as a guarantee in §5: **producing the artifact is cheaper
+   than running the procedure that should have produced it**, so the presence of a
+   receipt is evidence that a receipt was written. Since "every act leaves an artifact"
+   is otherwise the whole argument for the skill tier, this is the load-bearing caveat on
+   it, and §8 names the measurement that would size it.
 3. **The committed mind supplies the numbers.** In a skill-only argument map, the mind
    that holds the lean writes every score into the file — a lawyer with a spreadsheet.
    In the machinery version the server elicits each judgment through a controlled
@@ -224,6 +247,22 @@ not a record), and skill-kept randomness is reportable selectively (a panel whos
 survives motivated reasoning because its failure is visible in the artifact — it is a
 skill. If the act only works because something outside the model refuses to let the
 lawyering through, it needs machinery.
+
+There is a reason the line falls exactly there, and it is worth one paragraph because it
+turns a heuristic into a boundary. For any chain *truth → model output → post-processing*,
+where the post-processing is a function of the model's output alone, the data-processing
+inequality gives I(truth; processed) ≤ I(truth; output). **No re-reading, self-critique,
+reflection, or debate between copies of one model can contain more information about the
+truth than the output already did.** That is precisely why the acts that work as skills
+are the ones whose value does not depend on adding information — reformatting, pinning,
+decomposing, structuring — while the acts needing machinery are those whose value *is*
+the arrival of something external: a fresh-context judgment, a source, an executed
+result, a resolved outcome. One refinement makes the statement correct: the inequality
+concerns Shannon information, and the usable-information literature shows post-processing
+can increase what a computationally bounded decoder actually extracts. The precise
+version is therefore **structure can improve extraction; it cannot improve evidence** —
+which is also why chain-of-thought helps while unaided self-correction degrades (Huang et
+al. 2024).
 
 Machinery comes in two grades, giving three tiers overall:
 
@@ -249,6 +288,23 @@ test; *Strong* means discipline-dependent but with failures visible in artifacts
 *Partial/Weak* means a determined lawyer defeats it silently — the skill ships anyway
 because the weak form still pays, and it says so on the label.
 
+One rule now qualifies that last clause. Where a check must be self-administered — which
+is most of them — **prefer the form that refuses over the form that labels.**
+`NO_REFERENCE_CLASS` is a gate: the pipeline stops and names what is missing. "Grade D —
+unsourced" is a label: the value flows onward wearing a disclaimer. Labels are useful and
+they do not stop a motivated actor, because structure persuades independently of
+correctness and a disclaimer beside a number is read as care rather than as a warning.
+The worked example is this release's pedigree gate: `aggregate_numeric` and
+`combine_fermi` require a provenance tag per input and *refuse* when an `invented` one is
+load-bearing, rather than computing and disclaiming. Two details matter. First, each tool
+states the **mechanical** rule by which it decided "load-bearing" — the draw at the median
+position; the factor at or above the average share of total `log10(high/low)`, or stated
+as a point — because a load-bearing test left to judgment is a label again. Second, the
+gate is deliberately *not* applied to `score_ach`: ordinal C/I/N cells over 1–3
+credibility already sit near the honest resolution limit of the underlying judgment, and
+the output is a ranking plus flip cells rather than a decimal. The gate belongs where
+exact arithmetic meets continuous invented inputs, not everywhere a judgment enters.
+
 | # | Act | Skill (shipped) | Coverage as skill | What only machinery guarantees | Machinery shape | Machinery status |
 |---|-----|-----------------|-------------------|-------------------------------|-----------------|------------------|
 | 3 | Reformat | `ct-reformat` | **Full** | — | — | not needed |
@@ -257,17 +313,19 @@ because the weak form still pays, and it says so on the label.
 | 4 | Assumption audit | `ct-assumption-audit` | **Full** | — | — | not needed |
 | 11 | Premortem | `ct-premortem` | **Full** | tripwire follow-through | scheduler/hook watching signals | Tier 2, optional |
 | 5 | Steelman | `ct-steelman` | **Strong** | advocate blindness; symmetric effort; timestamped pre-registration | debate service, hidden channels, effort accounting | worth building |
-| 9 | Judgment panel | `ct-panel` + `aggregate.py` | **Strong** | every draw reported | sampling service with server-side draw log | argLLM's sampling adapter is this shape |
+| 9 | Judgment panel | `ct-panel` + `aggregate.py` | **Strong** | every draw reported; that a `source` tag is true | sampling service with server-side draw log | argLLM's sampling adapter is this shape |
 | 6 | ACH | `ct-ach` + `ach_score.py` | **Strong** | per-cell fresh elicitation | ACH server — the natural sibling of argLLM | **best next server** |
-| 7 | Evidence ledger | `ct-evidence-ledger` + `ledger.py` | **Partial** | honest grading; source-says-what-claim-says; immutability | citation-checker + append-only store | worth building |
-| 8 | Consistency log | `ct-consistency-log` + `commitlog.py` | **Partial** | complete capture (logging is voluntary); immutability | boundary auto-logger of stated positions | worth building |
-| 10 | Calibration | `ct-calibration` + `brier.py` | **Weak** (self-graded) | untamperable history; outcomes fed by non-predictor (CI, tracker, human) | prediction-ledger service | **second-best next server** |
-| 13 | Verdict gate | `ct-verdict-gate` | **Weak** (skippable) | the lock itself | harness Stop/PreToolUse hook | Tier 2, cheap, recommended |
+| 7 | Evidence ledger | `ct-evidence-ledger` + `ledger.py` | **Partial** | honest grading; immutability | citation-checker + append-only store | worth building |
+| 8 | Consistency log | `ct-consistency-log` + `commitlog.py` | **Partial** | complete capture (logging is voluntary); that recorded edges match real dependence; immutability | boundary auto-logger of stated positions | worth building |
+| 10 | Calibration | `ct-calibration` + `brier.py` | **Weak** (self-graded, now *measurably* so via `resolved_by`) | untamperable history; outcomes fed by non-predictor (CI, tracker, human) | prediction-ledger service | **second-best next server** |
+| 13 | Verdict gate | `ct-verdict-gate` + `hooks/verdict_gate_stop.py` | **Strong** (locked; the hook fails open) | that the gate was *filled*, not merely written | harness Stop hook + process audit | **exists** (`hooks/`) |
+| 15 | Entailment check | `ct-entailment` + `origins.py` | **Strong** | that retrieval happened and spans are real; fetched-source verification | citation-checker fetching each source | worth building |
+| 16 | Ensemble of perspectives | `ct-ensemble` + `bag.py` | **Strong** | that each perspective saw only its slice; that draws were not re-rolled | sampling service with a server-side draw log | shares argLLM's sampling shape |
 | 12 | Sensitivity probe | inside `ct-ach` / `ct-argument-map` | **Strong** (it is arithmetic) | computed over guaranteed structure | comes free with ACH/argLLM servers | partially exists |
 | 14 | Argument map | `ct-argument-map` (driver only) | **orchestration only** | validated tree; fresh-context τ; recomputed-never-stored σ; copy-on-write revisions | **argLLM server** | **exists** |
 | — | Fresh-mind sourcing (cross-cutting) | conventions §2 + templates | discipline | a channel the orchestrator cannot contaminate | MCP sampling at the server boundary | exists in argLLM |
 
-Three observations on the table.
+Four observations on the table.
 
 **The split is not simple-vs-complex.** Reformatting and definition-pinning are
 cognitively deep and fully skill-coverable, because their failures are visible: an
@@ -276,17 +334,66 @@ reader (or the steelman advocate) can attack it. Calibration is mechanically tri
 a file and a mean of squared errors — and is the *worst*-covered act in the set,
 because its entire value is a history the predictor must not control.
 
-**The machinery column is mostly about three guarantees.** Across rows, what upgrades
+**The machinery column is mostly about four guarantees.** Across rows, what upgrades
 buy reduces to: (a) *judgment sourcing* — elicitation from contexts the orchestrator
 cannot contaminate; (b) *process-bound artifacts* — records that could only exist if
-the procedure ran; (c) *protected state* — append-only, non-repudiable history. These
-are boundary properties. No amount of in-context instruction provides a boundary.
+the procedure ran; (c) *protected state* — append-only, non-repudiable history; and
+(d) *artifact–process binding*, which the earlier revisions folded into (b) and which
+deserves to stand alone because it is the caveat on the skill tier's whole case:
+**an artifact can be produced without its process, and producing it is cheaper than
+running the procedure that should have produced it.** The presence of a receipt is
+therefore evidence that a receipt was written, not that the procedure ran. A model can
+fill a hypothesis matrix in one lawyerly breath — the table exists; the independent
+rating never happened. Observability is necessary and not sufficient. These are all
+boundary properties: no amount of in-context instruction provides a boundary, and the
+verdict-gate hook shipped in this release makes the point sharply — it can check that a
+gate file *exists*, never that its seven items were honestly answered. How much this
+bites in practice is an empirical question nobody has measured, which is why §8's
+process-vs-artifact audit is the first thing built and the thing that decides how much of
+the rest is worth building.
 
 **Two acts are named as next servers.** ACH is argLLM's natural sibling: same
 architecture (structure validated at the boundary, judgments elicited per-cell from
 fresh contexts, verdict recomputed from structure), different formalism (matrix +
 inconsistency counting instead of QBAF + gradual semantics). The calibration ledger is
-the other: small, high-leverage, and impossible to do honestly as a skill.
+the other: small, high-leverage, and impossible to do honestly as a skill. **The audit
+picks between them, and may say neither.** If artifact-without-process proves rare, the
+elicitation server is not worth building and the prediction ledger becomes the obvious
+first machinery — its value is a history the predictor must not control, which is a
+different problem from compliance and is unaffected by the audit's result. If
+artifact-without-process proves common, the order reverses.
+
+### 5.1 The evidence behind each act
+
+The founding claim is that these are ports of tested human findings, not prompt folklore.
+That claim is only auditable if each act names the finding it implements and, where one
+exists, the LLM-side replication of the same failure. **An act with an empty cell here is
+a candidate for the next cut, not a candidate for defence.**
+
+| # | Act | Human finding | LLM-side replication of the failure |
+|---|-----|---------------|-------------------------------------|
+| 3 | Reformat | F2 — frequency formats roughly triple correct Bayesian answers, physicians included (Gigerenzer & Hoffrage 1995) | performance swings widely on prompt-format changes carrying no information (Sclar et al. 2024) |
+| 2 | Definition pin | F8 — structured analytic techniques; equivocation control (Heuer 1999) | — *(no direct LLM study; flagged, not defended)* |
+| 1 | Question tree / Fermi | F3 — working memory ≈ 4 chunks; cognition is externalized (Cowan 2001; Clark & Chalmers 1998) | chain-of-thought's gains are exactly externalized intermediate steps (Wei et al. 2022) |
+| 4 | Assumption audit | F8 — consider-the-opposite replicates (Lord, Lepper & Preston 1984) | — *(inherits F4's evidence indirectly)* |
+| 11 | Premortem | F8 — prospective hindsight raises cause identification (Klein 2007) | — *(no direct LLM study)* |
+| 5 | Steelman | F4 — biased producers, competent evaluators; groups 8-in-10 vs individuals 1-in-10 (Mercier & Sperber 2011; Moshman & Geil 1998) | evaluators recognize and favor their own generations (Panickssery et al. 2024); debate improves factuality (Du et al. 2023) |
+| 9 | Judgment panel | F7 — judgment is noisy across occasions (Kahneman, Sibony & Sunstein 2021); mechanical combination wins (Meehl 1954; Grove et al. 2000) | self-consistency: sample several, aggregate mechanically (Wang et al. 2023) |
+| 6 | ACH | F8 + F1 — least-inconsistency beats most-support; testing one story is the default failure (Heuer 1999) | models largely cannot self-correct reasoning without external information (Huang et al. 2024) |
+| 7 | Evidence ledger | F6 — score-keeping is what couples confidence to accuracy (Tetlock 2005) | — *(hallucinated-citation literature is adjacent, not a replication)* |
+| 15 | Entailment check | F2/F8 — relevance is not entailment; independence of sources is the classic corroboration error | retrieval-augmented models cite sources that do not support the claim; repetition inflates apparent support |
+| 16 | Ensemble of perspectives | F7 — mechanical combination beats holistic judgment, and judgment is noisy (Meehl 1954; Kahneman, Sibony & Sunstein 2021); bagging is the statistical form (Breiman 1996, 2001) | self-consistency samples and aggregates mechanically (Wang et al. 2023); debate across independent contexts improves factuality (Du et al. 2023) |
+| 8 | Consistency log | F3 — small working memory; drift over long horizons | "lost in the middle": long-context attention is effectively shallow (Liu et al. 2024) |
+| 10 | Calibration | F6 — weather forecasters are calibrated because feedback is fast; superforecasters keep score (Tetlock & Gardner 2015) | — *(LLM calibration is well studied; the *ledger* intervention is not)* |
+| 13 | Verdict gate | F8 — checklists work; awareness does not (Gawande 2009) | F1's post-hoc checking: self-critique without external information does not correct (Huang et al. 2024) |
+| 12 | Sensitivity probe | F7 — it is arithmetic, not judgment | — *(mechanical; no replication needed)* |
+| 14 | Argument map | F8 — argument mapping yields ~0.7–0.8 SD gains per semester (van Gelder 2005; Twardy 2004) | QBAF-structured verification improves contestable claim checking (Freedman et al. 2024) |
+
+Read the empty cells honestly. Five acts rest on human evidence with no LLM-side
+replication of the specific failure, and two of those (definition pin, premortem) have no
+direct LLM study at all. They ship because the human evidence is strong and the cost is
+low — but they are the first candidates for removal if measurement does not support them,
+and saying so here is the point of the column.
 
 ## 6. Case study: argLLM as the machinery tier
 
@@ -371,13 +478,58 @@ The set makes falsifiable claims; here is how we would test them (not yet run):
 - **Cost.** Tokens and wall-clock per act, because the honest comparison is
   quality-per-dollar, and because some acts (reformat, definition pin) should pay for
   themselves while others (full ACH) are reserved for stakes.
-- **Process-vs-artifact audit.** Sample skill runs and check whether artifacts were
-  produced by their procedures (e.g., are ACH cell ratings actually independent across
-  the matrix, measured by rating correlation with lean-revealed reruns?). This
-  quantifies the pencil-whipping rate — the number that decides how much Tier 2/3 is
-  actually needed per act.
+- **Process-vs-artifact audit.** The measurement for guarantee (d), and the one built
+  first because its result decides what else is worth building. `bench/process_audit/`
+  holds the protocol. Take N tasks suited to hypothesis-matrix analysis and produce two
+  matrices each. **Arm A** runs the prescribed procedure: one fresh cell-rater per
+  evidence item, each seeing the hypothesis list and that one item only, no lean.
+  **Arm B** produces the same matrix in a single pass by a model that has been shown a
+  lean. Compare cell-by-cell agreement between arms, and both against ground truth where
+  the instance is synthetic. Instrument compliance at the same time: whether the
+  subagents were actually spawned in normal operation, and how that varies with context
+  length and task confidence. The readings are unambiguous — *Arm B ≈ Arm A, both
+  accurate*: the fresh-mind discipline is not doing work, skills suffice. *Arm B ≈ Arm A,
+  both lean-shifted*: the procedure is not being run, machinery is required. *Arm B
+  shifted, Arm A not*: the discipline works when followed, so harness hooks become the
+  priority. This lives in `bench/` rather than `tests/` on purpose: tests pin behaviour
+  deterministically, and this measures a live model and will be noisy.
+- **Instances with planted traps.** `bench/generate_instance.py` procedurally generates a
+  diagnosis-and-intervention problem *from* hidden ground truth, so scoring is exact and
+  contamination impossible. Each trap maps to one act and each wrong discipline produces
+  a *different* wrong answer, so a failure is attributable rather than merely wrong:
+  counting restatements of one origin as four observations lands on one hypothesis;
+  missing a mid-episode retraction lands on another; ignoring the base rates that exist
+  only in a queryable registry lands on a third. The budget makes the confirmatory path
+  infeasible by construction, one sub-question no affordable probe can settle (the
+  correct answer is abstention), and one remediation schedule is infeasible in a stated
+  fraction of instances (the correct answer is the infeasibility proof and the minimal
+  conflicting subset). The honest limit: handing over likelihood ratios and constraints
+  already formalised means the instrument tests **procedural discipline only**. Whether a
+  model can produce a faithful formalisation in the first place is the harder question,
+  and this does not reach it.
 
 ## 9. Limitations and open questions
+
+**No experiment has been run.** Everything above rests on human-sciences evidence,
+LLM-side parallels established for the *failure modes* rather than for these specific
+interventions, and design argument. That is a reasonable basis for building and a poor
+basis for confidence, and the §5.1 table exists so the thinness is visible per act rather
+than averaged away.
+
+One adversarial trial of this general approach — one instance, two agents, one following a
+structured procedure and one unaided — tied on nine of thirteen sub-questions. The
+structured arm won decisively on exactly two: a machine-checked minimal unsatisfiable
+core, where prose reasoning produced a plausible but non-minimal answer; and detecting
+that the instance's evidence was internally inconsistent, which the unaided arm never
+encountered because it only bought probes confirming its leading hypothesis. Notably,
+origin clustering and retraction handling — two things this revision invests in — were
+handled correctly by **both** arms within a single short context.
+
+Read that carefully. It supports the thesis where computation replaces judgment and where
+a gate resists a motivated actor. It does **not** support the claim that these disciplines
+help within a short, well-structured context. The real bet is that they help **across long
+horizons, under load, when the correction was twenty steps ago and the context has moved
+on** — and that has not been tested.
 
 - **Structure has overhead.** Decomposition and matrices cost tokens and can hurt on
   tasks where the model's holistic judgment is already good — the LLM evidence on
@@ -393,10 +545,17 @@ The set makes falsifiable claims; here is how we would test them (not yet run):
   orchestrator still chooses *which* edits to make; the guarantee is visibility, not
   virtue. We consider visible lawyering a success condition — it is what contestability
   means — but users should not mistake a receipt for a proof of good faith.
-- **Transfer.** Human critical-thinking training transfers poorly across domains
-  (Willingham 2007). Whether a model that *practices* these acts (or is fine-tuned on
-  their receipts) improves its unaided reasoning — the van Gelder question, ported — is
-  unknown and testable.
+- **Subagents do not remove blind spots.** Fresh contexts remove contamination,
+  self-ownership, and noise; they do not remove failure modes shared by the model class,
+  and a panel of five wrong in the same direction is still wrong. The `source` tag added
+  in this revision moves that caveat from prose into the output — which is the part a
+  skill can do — but it does not make the tags true.
+- **Transfer — the deepest open question.** Human critical-thinking training transfers
+  poorly across domains (Willingham 2007). Whether a model that *practices* these acts
+  (or is fine-tuned on their receipts) improves its unaided reasoning, **or merely
+  produces better receipts** — the van Gelder question, ported — is unanswered, testable,
+  and decides how much any of this is worth. Everything above is worth exactly as much as
+  the measurements that follow it.
 
 ## 10. Conclusion
 
@@ -420,7 +579,7 @@ called for: a lean MCP server of purely mathematical aggregators (`src/ctmcp/`) 
 evaluation under DF-QuAD, ACH inconsistency scoring with flip-cell sensitivity, panel
 statistics, Brier calibration bins, and Fermi interval arithmetic.
 
-This server is a deliberately *partial* Tier 3. Of §5's three machinery guarantees it
+This server is a deliberately *partial* Tier 3. Of §5's four machinery guarantees it
 provides only the arithmetic half of (b) — verdicts computed by rule, with the rule
 echoed alongside every result. It provides **no** judgment-sourcing guarantee (a) and
 **no** protected state (c); it will faithfully aggregate a lawyer's spreadsheet if fed
@@ -431,6 +590,43 @@ degraded mode now names this rung explicitly, and the honesty rule extends to it
 reported number is labeled with the rung that produced it (self-assigned /
 subagent-elicited / server-enforced). Full machinery for argument mapping remains
 argLLM, the companion repository.
+
+## Addendum (v1.2) — refusal, retraction, origins, and the measurement
+
+Four capability changes and four doctrine changes, all additive.
+
+The doctrine changes are stated where they belong rather than here: guarantee (d),
+artifact–process binding (§5); the data-processing bound that explains where the lawyer
+test draws its line (§4.3); gate-over-label (§5); and the per-act evidence table (§5.1),
+whose empty cells are the point.
+
+The capability changes each close a failure the set previously permitted:
+
+- **Origins.** `score_ach` counts evidence credibility **once per origin cluster**. Four
+  restatements of one shift-log entry are one observation, and counting four independent
+  weights from them could manufacture a confident wrong survivor from a single source.
+  Absent the field, every item is its own origin and matrices score exactly as before.
+- **Retraction propagates.** The commitment log records `depends_on` at write time, and
+  superseding an entry marks its transitive dependents `OUT`. The pair-sweep catches *"I
+  said A at step 3 and not-A at step 40"*; it cannot catch *"I withdrew A at step 4 and
+  step 19 still rests on it"* — a failure invisible in the output by construction, since a
+  conclusion resting on a retracted premise looks identical to a correct one. The walk
+  claims no structural certificate: the record is model-authored, dependencies it did not
+  notice are absent, and it deliberately over-marks so that silence is the safe failure.
+- **Entailment.** Act 15 asks a fresh context whether a source *entails* a claim, and
+  collapses sources by origin before counting. Relevance is the failure mode; entailment
+  is the check.
+- **Refusal and provenance.** The pedigree gate on the two continuous aggregators; a
+  `source` per panel draw so composition stops being invisible; `resolved_by` per
+  calibration resolution so a self-graded ledger says so on its own face. None of these
+  is a guarantee — you can write `ci` on a self-resolution, or `sonnet` on five more draws
+  from the same model. What they do is make the gap **measurable rather than merely
+  disclosed**, which is the most a Tier-1 record can honestly claim.
+
+And the lock the set had been describing for two revisions now exists: `hooks/`
+(Appendix B). It checks that a gate file exists, not that its items were honestly
+answered — which is guarantee (d) restated, and exactly what `bench/process_audit/` is
+built to measure.
 
 ---
 
@@ -501,11 +697,16 @@ argLLM, the companion repository.
 - Wei, J. et al. (2022). Chain-of-thought prompting elicits reasoning in large
   language models. *NeurIPS*.
 
+*Statistics*
+
+- Breiman, L. (1996). Bagging predictors. *Machine Learning*; (2001). Random forests.
+  *Machine Learning*. (Resample-and-aggregate, and permutation importance.)
+
 ---
 
 ## Appendix A — the shipped skill set
 
-Fourteen skills under `skills/` (symlinked as `.claude/skills` in this repository, so
+Sixteen skills under `skills/` (symlinked as `.claude/skills` in this repository, so
 they are live here; copy skill directories into another project's `.claude/skills/` or
 into `~/.claude/skills/` for global use). Scripts are Python-stdlib-only.
 
@@ -520,6 +721,8 @@ into `~/.claude/skills/` for global use). Scripts are Python-stdlib-only.
 | `ct-premortem` | SKILL.md | declarative-failure analysis, tripwires |
 | `ct-ach` | SKILL.md, scripts/ach_score.py, references/method.md | hypothesis racing, inconsistency scoring, flip-cell sensitivity |
 | `ct-evidence-ledger` | SKILL.md, scripts/ledger.py | claim–source coupling, naked-claim report |
+| `ct-ensemble` | SKILL.md, scripts/bag.py, references/example.md | bagged perspectives, mechanical vote, permutation importance |
+| `ct-entailment` | SKILL.md, scripts/origins.py | per-claim entailment verdicts, origin clustering, distinct-origin counts |
 | `ct-consistency-log` | SKILL.md, scripts/commitlog.py | commitment capture, pair-sweep bookkeeping |
 | `ct-panel` | SKILL.md, scripts/aggregate.py | independent draws, mechanical aggregation |
 | `ct-calibration` | SKILL.md, scripts/brier.py | prediction ledger, Brier bins (self-graded, labeled) |
@@ -528,4 +731,16 @@ into `~/.claude/skills/` for global use). Scripts are Python-stdlib-only.
 
 Workspace convention: artifacts under `.ct/` (gitignored; force-add receipts worth
 keeping). Every skill ends its act by citing its artifact path — the receipts are the
-transparency.
+transparency, subject to guarantee (d): they show a receipt was written.
+
+## Appendix B — the other two rungs in this repository
+
+| Directory | Tier | Contents |
+|---|---|---|
+| `hooks/` | 2 — locks | `verdict_gate_stop.py`, a Claude Code `Stop` hook refusing to end a turn that ships a verdict marker with no `.ct/gate--*.md` written that session, plus install notes. Blocks at most once per turn and fails open — a lock on the careless path, not on a determined one. |
+| `bench/` | — measurement | `generate_instance.py` (seeded adversarial instances generated from hidden ground truth), `score_instance.py` (exact scoring with per-trap attribution), `process_audit/` (the Arm A / Arm B protocol and `compare_arms.py`). Calls no model. **Not in the repository at time of writing** — held back while the instrument is still being corrected, so the citations to it below record findings rather than point at files. |
+
+Neither is imported by `src/ctmcp`. The hook is executed by the agent runtime; the bench
+is run by hand. Both are stdlib-only, and both are linted, typechecked, and — for their
+deterministic parts — pinned by tests, because a harness that is itself unreliable
+measures nothing.

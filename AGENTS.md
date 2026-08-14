@@ -14,12 +14,18 @@ both lives in `docs/critical-thinking-whitepaper.md`.
 ## Architecture — enforced dependency direction
 
 ```
+hooks/                  Tier 2 locks: standalone harness scripts (Stop hook), run by
+                        the agent runtime, importing nothing from this package
 skills/                 recipes: procedure + prompts; ALL LLM judgments are
                         host-side subagents (fresh minds), never server calls
     │ drives
 src/ctmcp/server/       thin FastMCP shell: schema validation, tool annotations
     │ calls
 src/ctmcp/core/         pure math, zero I/O — the aggregators
+
+bench/                  measurement, not shipped and currently NOT COMMITTED (.gitignore,
+                        along with tests/test_bench.py which imports it). Off to the
+                        side; nothing in src/, skills/ or hooks/ depends on it.
 ```
 
 - **No LLM calls anywhere in this codebase, ever.** No provider SDKs, no MCP sampling,
@@ -27,7 +33,14 @@ src/ctmcp/core/         pure math, zero I/O — the aggregators
   run a subagent (fresh-mind rule: `skills/critical-thinking/references/conventions.md`
   §2). Judgment sourcing with server-side *guarantees* is argLLM's territory; this
   server guarantees arithmetic only — and its results must be labeled accordingly
-  (inputs self-assigned vs subagent-elicited).
+  (inputs self-assigned vs subagent-elicited). **This covers `bench/`**: the process
+  audit is a protocol a host agent runs by hand, plus deterministic scripts that score
+  the artifacts afterwards. The generator and the scorers never call a model.
+- **Gate over label.** Where a self-administered check finds a disqualifying input, it
+  *refuses* rather than computing and disclaiming — a disclaimer beside a number reads as
+  care, not as a warning. `aggregate_numeric` and `combine_fermi` refuse an `invented`
+  load-bearing input; each states the *mechanical* rule by which it decided that, because
+  a load-bearing test left to judgment is a label again.
 - **`core/` is pure**: functions of plain data; no I/O, no MCP imports, deterministic.
   Every formula's docstring cites its source (DF-QuAD — Rago et al. 2016, as used in
   Freedman et al. 2024 arXiv:2405.02079; ACH — Heuer 1999 ch. 8; Brier 1950).
@@ -84,6 +97,19 @@ Every change must end green on all four commands above. Do not commit unless ask
   project's `.claude/skills/` (or `~/.claude/skills/` for global use); each skill's
   scripts travel with its directory.
 - `CLAUDE.md` is a symlink to this file — keep everything here agent-agnostic.
+- `hooks/` holds harness locks, not library code: standalone stdlib scripts the agent
+  runtime executes, installed by path from `.claude/settings.json`. They import nothing
+  from `src/ctmcp` and must **fail open** — a hook that wedges a session is worse than
+  the check it skipped.
+- `bench/` is measurement and is **gitignored for now**, together with
+  `tests/test_bench.py`, which imports it. Both exist locally; neither is in the
+  repository. `pyproject.toml` therefore leaves `bench` out of the ruff and mypy targets
+  and excludes that one test file, so a fresh clone still comes up green on all four
+  commands — check that it does before changing those lists.
+- Docs still cite `bench/` where a measurement from it changed a decision (the ACH
+  mutual-exclusivity premise, the withdrawal of per-cell accuracy). Those citations point
+  at unpublished work on purpose: the finding is real and the reasoning should be
+  followable, so keep the citation and keep the caveat rather than deleting either.
 
 ## Licensing / clean-room rules
 
@@ -95,4 +121,16 @@ consulted only to cross-check behavior). Do not add a license file without direc
 
 Server-side LLM calls or MCP sampling (argLLM's job) · sessions or persistent server
 state (all tools stateless and pure; ledgers live in caller-side `.ct/` files via the
-recipes) · PDF/RAG ingestion · web UI · benchmark CLI · a license file.
+recipes) · PDF/RAG ingestion · web UI · a benchmark CLI *in the shipped package* (`bench/`
+is out-of-package measurement and is in scope; `src/ctmcp` stays aggregators-only) · a
+license file.
+
+Also out, and named so they cannot creep back: multi-attribute utility machinery or
+consistency ratios over elicited weights · expected-value-of-information arithmetic over
+invented utilities · equilibrium computation over invented payoff matrices · belief
+filtering or planning over invented dynamics · factor-graph inference over invented
+factors · chain-reliability arithmetic over guessed per-step rates · conformal or credal
+infrastructure (it needs maintained labelled calibration sets, and a stale set emitting a
+live guarantee is worse than none) · a trained router. The common property: each computes
+exactly over quantities the model invented, and defends itself with a label rather than a
+refusal.

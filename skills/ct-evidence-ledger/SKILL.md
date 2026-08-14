@@ -62,12 +62,18 @@ you hate from the primary dataset is A. The uncomfortable grade is the point.
 
 ## Limits
 
-Two things discipline cannot give: nothing stops *generous grading*, and nothing checks
-the source actually says what the claim says. Machinery would: a citation-checker that
-fetches each source and verifies the quoted content against the claim, plus an
-append-only store. Until then, the ledger's honesty is only as good as the fresh-eyes
-review it gets — for high-stakes deliverables, have a subagent spot-check the A/B
-entries against their sources. See `docs/critical-thinking-whitepaper.md`.
+Two things discipline cannot give: nothing stops *generous grading*, and nothing here
+checks the source actually says what the claim says — a genuinely relevant source pinned
+to a claim it does not support passes as grade A.
+
+That second gap has its own act now: **`ct-entailment`** asks a fresh context the narrow
+question — does this text *entail* this claim, *contradict* it, or is it *insufficient*? —
+and collapses sources by origin before counting them. Run it against the finished factual
+spine; grading happens while you draft, entailment checking happens after. Generous
+grading remains uncovered, and machinery would still be a citation-checker that fetches
+each source plus an append-only store. Until then, for high-stakes deliverables have a
+subagent spot-check the A/B entries against their sources. See
+`docs/critical-thinking-whitepaper.md`.
 
 Part of the critical-thinking set — see the `critical-thinking` skill for routing and
 shared conventions.

@@ -61,11 +61,17 @@ condition is not a conclusion, it is an identity.
 
 A checklist in context is still advice: nothing *prevents* delivering a verdict without
 the gate file, and the model most likely to skip it is the one most confident — exactly
-the case the gate targets. Hard enforcement is harness work, one level up from skills:
-e.g. a Claude Code `Stop` hook that blocks ending the turn while the reply contains a
-verdict marker but no `.ct/gate--*.md` was written this session. The skill ships the
-checklist; only a hook can ship the lock. See `docs/critical-thinking-whitepaper.md`
-§three tiers.
+the case the gate targets. The skill ships the checklist; only a hook can ship the lock.
+
+**The lock now exists:** `hooks/verdict_gate_stop.py` is a Claude Code `Stop` hook that
+refuses to end a turn when the reply carries a verdict marker and no `.ct/gate--*.md` was
+written that session. Installation notes in `hooks/README.md`. It blocks at most once per
+turn and fails open, so it is a lock on the careless path, not on a determined one.
+
+And it checks that the artifact **exists**, not that the procedure **ran** — it cannot
+tell a real gate from seven lines of `SKIPPED: obviously fine`. That gap is the fourth
+guarantee in `docs/critical-thinking-whitepaper.md`, and the thing `bench/process_audit/`
+is built to measure.
 
 Part of the critical-thinking set — see the `critical-thinking` skill for routing and
 shared conventions.

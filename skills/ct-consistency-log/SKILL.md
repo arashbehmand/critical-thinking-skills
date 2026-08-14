@@ -1,6 +1,6 @@
 ---
 name: ct-consistency-log
-description: Log every decision and factual position taken during long multi-step work, and periodically sweep the log for contradictions with a fresh subagent before they compound. Use for tasks spanning many steps or sessions - migrations, long documents, multi-file refactors, investigations; or when the user says "didn't you say earlier" or "keep our decisions straight".
+description: Log every decision and factual position taken during long multi-step work along with what it rests on, sweep the log for contradictions with a fresh subagent, and walk the dependency edges so a retraction knocks out everything built on it. Use for tasks spanning many steps or sessions - migrations, long documents, multi-file refactors, investigations; or when the user says "didn't you say earlier", "we changed our mind about that", or "keep our decisions straight".
 argument-hint: [optional topic slug for the log file]
 ---
 
@@ -11,57 +11,109 @@ and each local decision feels consistent with a past that is half-imagined. Atte
 over a long context is shallow — write commitments down at decision time and check new
 ones against the record mechanically.
 
+Two failures, two sweeps. `pairs` catches *"I said A at step 3 and not-A at step 40"*.
+`check` catches *"I withdrew A at step 4 and step 19 still rests on it"* — which the pair
+sweep cannot see, and which is invisible in the output by construction: a conclusion
+resting on a retracted premise looks exactly like a correct one.
+
 ## Procedure
 
-1. **Log at decision time.** Whenever you fix a decision, adopt a factual position, or
-   make a promise the rest of the work relies on:
+1. **Log at decision time, with what it rests on.** Whenever you fix a decision, adopt a
+   factual position, or make a promise the rest of the work relies on:
 
    ```sh
    python3 skills/ct-consistency-log/scripts/commitlog.py add \
      --file .ct/commitments--<slug>.jsonl \
-     --statement "retry budget is 3 attempts, then dead-letter" --tags retries,queue
+     --statement "dead-letter queue drains hourly" --tags retries,queue \
+     --depends-on c-1,c-4
    ```
 
-   Statements are atomic and checkable — one commitment per entry, concrete enough that
-   a stranger could say whether a later statement clashes with it.
-2. **Changing a decision is an event, not an edit:** new entry with
-   `--supersedes c-4` and the reason in the statement. The old line stays — the history
-   of changed minds is signal (conventions §4).
-3. **Sweep periodically** — every ~10 entries, and always before the final deliverable:
+   Statements are atomic and checkable — one commitment per entry, concrete enough that a
+   stranger could say whether a later statement clashes with it. `--depends-on` names the
+   entries this one is built on, **written now, never reconstructed at the end**: a
+   dependency recalled after the fact is a rationalisation of the shape the work took.
+2. **Changing a decision is an event, not an edit:** new entry with `--supersedes c-4` and
+   the reason in the statement. The old line stays — the history of changed minds is
+   signal (conventions §4). The `add` prints, right then, which entries just fell over.
+3. **Sweep for contradictions periodically** — every ~10 entries, and always before the
+   final deliverable:
 
    ```sh
    python3 skills/ct-consistency-log/scripts/commitlog.py pairs \
      --file .ct/commitments--<slug>.jsonl
    ```
 
-   emits candidate pairs of active same-tag entries. Hand the pairs to a fresh
-   contradiction reviewer (template T8,
-   `critical-thinking/references/subagent-templates.md`) — it judges the written pairs
-   with no task context, which is exactly what makes it cheap and unbiased. You wrote
-   both lines; you *will* harmonize them without noticing. It won't.
-4. **Resolve every flag:** supersede one side explicitly, or record next to the pair why
-   both stand. An unresolved CONTRADICT flag blocks the deliverable.
+   emits candidate pairs of live same-tag entries. Hand them to a fresh contradiction
+   reviewer (template T8, `critical-thinking/references/subagent-templates.md`) — it
+   judges the written pairs with no task context, which is exactly what makes it cheap
+   and unbiased. You wrote both lines; you *will* harmonize them without noticing. It
+   won't.
+4. **Walk the dependencies before delivering:**
+
+   ```sh
+   python3 skills/ct-consistency-log/scripts/commitlog.py check \
+     --file .ct/commitments--<slug>.jsonl
+   ```
+
+   Reports `OUT` entries with the withdrawn premise each rests on, circular support, and
+   shared premises carrying several live claims at once. It exits non-zero while any
+   `OUT` entry remains.
+5. **Resolve every flag.** A `CONTRADICT` is resolved by superseding one side explicitly
+   or recording next to the pair why both stand. An `OUT` entry is **re-derived from live
+   premises or dropped** — never quietly kept. Both block the deliverable.
+6. **Pre-delivery check:** every load-bearing claim in the final answer traces to a live
+   entry. Any that does not is the bug.
+
+## Status
+
+Computed from the log, never written into it — the file stays append-only.
+
+| Status | Meaning |
+|---|---|
+| `ACTIVE` | live: not superseded, and every premise it rests on is live |
+| `SUPERSEDED` | a later entry replaced it |
+| `OUT` | rests, directly or transitively, on something not live |
+
+The walk is deliberately conservative and **over-marks when edges are missing** — an
+entry whose premise is not in the log at all is `OUT` too. Silence is the safe failure
+here; false confidence is not.
 
 ## Tagging
 
-Tags are the pairing key — pick 1–3 per entry from a small stable set you establish
-early (component names, decision areas). Too many tags and contradictions hide across
-tag boundaries; run `pairs --all` before the final sweep to catch cross-tag clashes.
+Tags are the pairing key — pick 1–3 per entry from a small stable set you establish early
+(component names, decision areas). Too many tags and contradictions hide across tag
+boundaries; run `pairs --all` before the final sweep to catch cross-tag clashes.
 
 ## Integrity rules
 
 - Log at decision time, **not retroactively** — a log reconstructed at the end inherits
   the very drift it was supposed to catch.
+- `depends_on` is written when the entry is written. Backfilling edges produces a graph
+  that agrees with the conclusion you already reached.
 - The pair review must be a fresh mind (T8), never you re-reading your own log.
 - Superseding without a reason in the statement is an edit in disguise.
 
+## Signs it is being run badly
+
+- Entries with empty `depends_on` across the board — that is a transcript summary, not a
+  dependency record, and `check` says so.
+- The log written once, at the end.
+- Corrections that produce no `OUT` marks: either nothing rested on the retracted claim,
+  or the edges were never recorded.
+- A final answer citing an `OUT` entry.
+
 ## Limits
 
-Capture is voluntary: the skill cannot make you log the commitment you'd rather not
-write down, and the JSONL is a mutable file. Machinery would: a boundary that logs
-commitments automatically (every tool response, every stated position at the server
-edge) into an append-only store. That gap — voluntary capture — is this act's main
-leak; see `docs/critical-thinking-whitepaper.md`.
+Capture is voluntary: the skill cannot make you log the commitment you'd rather not write
+down, and the JSONL is a mutable file. That gap is this act's main leak. And the walk
+carries a caveat it prints on every run: **the record is model-authored, so this detects
+inconsistencies among recorded dependencies only.** Writing claims and support edges into
+a ledger is itself an encoding of ambiguous reasoning into graph form, performed one
+assertion at a time by the same fallible model — dependencies it did not notice are
+absent, dependencies it imagined are present. Anything computed over that record is exact
+*about the record* and says nothing about the reasoning; claim no structural certificate
+from it. Machinery would be a boundary that logs commitments automatically into an
+append-only store. See `docs/critical-thinking-whitepaper.md`.
 
 Part of the critical-thinking set — see the `critical-thinking` skill for routing and
 shared conventions.

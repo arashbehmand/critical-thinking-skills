@@ -36,11 +36,18 @@ measured answer.
 
    ```sh
    python3 skills/ct-calibration/scripts/brier.py resolve \
-     --file .ct/predictions.jsonl --id p-3 --outcome 1 --note "CI green 30 days, no reopen"
+     --file .ct/predictions.jsonl --id p-3 --outcome 1 --resolved-by ci \
+     --note "CI green 30 days, no reopen"
    ```
 
    The `--note` names the observation a stranger could check. Resolution judges the
    question **as recorded**, not as you now wish it had been phrased.
+
+   `--resolved-by` is required and records **who observed the outcome** — `self`, `ci`,
+   `tracker`, `human`, or a name. Write `self` when you resolved it yourself; that is the
+   honest answer and it is the entire point of the field. The report then splits the
+   score by resolver, so a ledger you graded yourself says so on its own face instead of
+   printing a bare number.
 4. **Use the bins, not just the score.** The report's finding looks like: *"at 80–90%
    stated, 5 of 9 happened (56%)"* — that is systematic overconfidence in that band.
    The fix is to adjust *future* numbers downward in that band; relabeling past entries
@@ -63,12 +70,16 @@ only means something if it accumulates.
 
 This is the **weak form** of the act, and the gap matters more here than anywhere else
 in the set: you are grader of your own homework, on a file you can edit. Append-only
-discipline and the no-edit tooling narrow the leak; they do not close it. The strong
-form is machinery: an external ledger the model cannot rewrite, fed outcomes by
-something other than the predictor (CI results, issue trackers, a human). Even so, the
-weak form pays — a self-kept score still reveals *directional* overconfidence, and the
-habit of naming a number and a deadline is most of the benefit. Label scorecard results
-as self-graded when reporting them. See `docs/critical-thinking-whitepaper.md`.
+discipline and the no-edit tooling narrow the leak; they do not close it. `resolved_by`
+does not close it either — nothing stops you writing `ci` on a resolution you made up.
+What it does is make the gap **measurable instead of merely disclosed**: a scorecard that
+reads *"Brier 0.31 across 3 predictions, 2 self-resolved (67% graded by the predictor)"*
+carries its own discount, and one where every outcome is self-recorded says outright that
+it measures consistency, not accuracy. The strong form is machinery: an external ledger
+the model cannot rewrite, fed outcomes by something other than the predictor (CI results,
+issue trackers, a human). Even so, the weak form pays — a self-kept score still reveals
+*directional* overconfidence, and the habit of naming a number and a deadline is most of
+the benefit. See `docs/critical-thinking-whitepaper.md`.
 
 Part of the critical-thinking set — see the `critical-thinking` skill for routing and
 shared conventions.

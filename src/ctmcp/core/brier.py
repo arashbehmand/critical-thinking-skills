@@ -4,9 +4,16 @@ Brier = mean((p − outcome)²); 0 is perfect, 0.25 is a coin flip at p = 0.5.
 Bins compare stated probability to observed frequency — the calibration
 finding ("at 80–90% stated, it happened 56% of the time").
 
+Resolved entries name `resolved_by` — self | ci | tracker | human | <name> —
+and the score is broken out by resolver. A predictor who grades their own
+homework then says so on the ledger's own face ("Brier 0.18 across 22
+predictions, 20 self-resolved") instead of reporting a bare number. Entries
+written before the field existed are reported as `unrecorded` rather than
+assumed to be anything.
+
 Pure: the caller passes the entries and `today` explicitly; nothing is read,
 written, or resolved here. Entry shape (a superset is fine):
-{id, p ∈ [0,1], resolve_by: ISO date, outcome: None | 0 | 1}.
+{id, p ∈ [0,1], resolve_by: ISO date, outcome: None | 0 | 1, resolved_by?: str}.
 """
 
 from typing import Any
@@ -14,8 +21,13 @@ from typing import Any
 BINS = ((0.0, 0.5), (0.5, 0.6), (0.6, 0.7), (0.7, 0.8), (0.8, 0.9), (0.9, 1.01))
 
 
+def _resolver(entry: dict[str, Any]) -> str:
+    """Who recorded the outcome. Absent on older ledgers — name that, don't assume."""
+    return str(entry.get("resolved_by") or "").strip() or "unrecorded"
+
+
 def report(entries: list[dict[str, Any]], today: str) -> dict[str, Any]:
-    """Score resolved predictions and surface pending/overdue ones."""
+    """Score resolved predictions, break out by resolver, surface pending/overdue ones."""
     for e in entries:
         if not 0.0 <= float(e["p"]) <= 1.0:
             raise ValueError(f"{e.get('id', '?')}: p must be in [0, 1]")
@@ -34,9 +46,26 @@ def report(entries: list[dict[str, Any]], today: str) -> dict[str, Any]:
         "mean_p": None,
         "hit_rate": None,
         "bins": [],
+        "n_self_resolved": 0,
+        "by_resolver": [],
     }
     if not resolved:
         return result
+
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for e in resolved:
+        groups.setdefault(_resolver(e), []).append(e)
+    rows: list[dict[str, Any]] = [
+        {
+            "resolver": name,
+            "n": len(group),
+            "brier": sum((e["p"] - e["outcome"]) ** 2 for e in group) / len(group),
+        }
+        for name, group in groups.items()
+    ]
+    rows.sort(key=lambda row: (-int(row["n"]), str(row["resolver"])))
+    result["by_resolver"] = rows
+    result["n_self_resolved"] = len(groups.get("self", []))
 
     result["brier"] = sum((e["p"] - e["outcome"]) ** 2 for e in resolved) / len(resolved)
     result["mean_p"] = sum(e["p"] for e in resolved) / len(resolved)

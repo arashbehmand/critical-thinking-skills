@@ -117,6 +117,68 @@ def test_ach_toy_matches_hand_computation() -> None:
     assert result["tied_top"] is False
     assert result["non_diagnostic_evidence"] == []
     assert result["rank_flip_cells"] == []  # gap 5 > max single-cell swing 3
+    # No `origin` anywhere: every item is its own origin, so nothing collapses and
+    # the scores are what they were before origins existed.
+    assert result["origin_clusters"] == {}
+    assert result["collapsed"] == []
+
+
+def echo_matrix() -> dict[str, Any]:
+    """One measurement against H1; one observation about H2, restated three times."""
+    return {
+        "question": "q",
+        "hypotheses": [{"id": "H1", "text": "one"}, {"id": "H2", "text": "two"}],
+        "evidence": [
+            {"id": "E1", "text": "meter reading", "credibility": 3},
+            {"id": "E2", "text": "shift log", "credibility": 2, "origin": "og-1"},
+            {"id": "E3", "text": "summary of the shift log", "credibility": 2, "origin": "og-1"},
+            {"id": "E4", "text": "ticket citing the summary", "credibility": 1, "origin": "og-1"},
+        ],
+        "ratings": [
+            {"evidence_id": "E1", "hypothesis_id": "H1", "rating": "I"},
+            {"evidence_id": "E1", "hypothesis_id": "H2", "rating": "N"},
+            {"evidence_id": "E2", "hypothesis_id": "H1", "rating": "N"},
+            {"evidence_id": "E2", "hypothesis_id": "H2", "rating": "I"},
+            {"evidence_id": "E3", "hypothesis_id": "H1", "rating": "N"},
+            {"evidence_id": "E3", "hypothesis_id": "H2", "rating": "I"},
+            {"evidence_id": "E4", "hypothesis_id": "H1", "rating": "N"},
+            {"evidence_id": "E4", "hypothesis_id": "H2", "rating": "I"},
+        ],
+    }
+
+
+def test_ach_counts_an_origin_once() -> None:
+    # H1 = 3 (E1, cred 3). H2's three items share og-1 → max(2, 2, 1) = 2, not 2+2+1 = 5.
+    # Uncollapsed, H2 would score 5 and lose; collapsed it scores 2 and survives.
+    result = ach.score(echo_matrix())
+    assert result["scores"] == {"H1": 3, "H2": 2}
+    assert result["ranking"] == ["H2", "H1"]
+    assert result["origin_clusters"] == {"og-1": ["E2", "E3", "E4"]}
+    assert result["collapsed"] == [
+        "E2, E3, E4 → one origin (og-1); credibility counted once, not 3 times"
+    ]
+
+
+def test_ach_flip_cells_respect_origin_collapse() -> None:
+    """No echo is load-bearing: a sibling still carries og-1 whichever one you change.
+
+    Every flip is an E1 cell — the one item with an origin of its own. Changing any
+    of E2/E3/E4 leaves og-1 contributing max(remaining I-rated members) = 2 to H2, so
+    the ranking does not move, which is the honest answer: that cell never decided it.
+    """
+    flips = ach.score(echo_matrix())["rank_flip_cells"]
+    assert flips == [
+        "E1xH2: N->I puts H1 ahead",  # E1 is its own origin, so its 3 lands in full
+        "E1xH1: I->C puts H1 ahead",
+        "E1xH1: I->N puts H1 ahead",
+    ]
+
+
+def test_ach_empty_origin_string_means_stands_alone() -> None:
+    m = echo_matrix()
+    for e in m["evidence"]:
+        e["origin"] = ""
+    assert ach.score(m)["scores"] == {"H1": 3, "H2": 5}  # 2 + 2 + 1, counted separately
 
 
 def small_matrix() -> dict[str, Any]:
@@ -163,8 +225,28 @@ def test_ach_incomplete_matrix_rejected() -> None:
 # --- panel ------------------------------------------------------------------
 
 
+def panel_draws() -> list[dict[str, Any]]:
+    """values [6, 7, 4, 7, 5]; sorted [4, 5, 6, 7, 7], so the median 6 is draw 1."""
+    return [
+        {"value": 6, "source": "opus", "pedigree": "elicited"},
+        {"value": 7, "source": "opus", "pedigree": "elicited"},
+        {"value": 4, "source": "sonnet", "pedigree": "elicited"},
+        {"value": 7, "source": "opus", "pedigree": "elicited"},
+        {"value": 5, "source": "human", "pedigree": "given"},
+    ]
+
+
+VOTE_DRAWS: list[dict[str, Any]] = [
+    {"choice": "A", "source": "opus"},
+    {"choice": "B", "source": "opus"},
+    {"choice": "A", "source": "sonnet"},
+    {"choice": "A", "source": "opus"},
+    {"choice": "C", "source": "human"},
+]
+
+
 def test_panel_numeric_hand_values() -> None:
-    result = panel.numeric([6, 7, 4, 7, 5])
+    result = panel.numeric(panel_draws())
     assert result["median"] == 6
     assert result["mean"] == pytest.approx(5.8)
     assert result["range"] == 3
@@ -172,18 +254,67 @@ def test_panel_numeric_hand_values() -> None:
 
 
 def test_panel_numeric_flags_wide_spread() -> None:
-    assert panel.numeric([2, 9, 3])["disagreement"] is True
+    draws = [{"value": v, "source": "opus", "pedigree": "elicited"} for v in (2, 9, 3)]
+    assert panel.numeric(draws)["disagreement"] is True
+
+
+def test_panel_reports_who_supplied_the_draws() -> None:
+    result = panel.numeric(panel_draws())
+    assert result["composition"] == {"opus": 3, "sonnet": 1, "human": 1}
+    assert result["distinct_sources"] == 3
+    assert result["shared_source"] is False
+    assert result["pedigree"] == {"given": 1, "elicited": 4}
+
+
+def test_panel_of_one_model_says_it_cancels_noise_only() -> None:
+    """Five draws from one model must not print like five independent sources."""
+    draws = [{"value": v, "source": "opus", "pedigree": "elicited"} for v in (6, 7, 4, 7, 5)]
+    result = panel.numeric(draws)
+    assert result["shared_source"] is True
+    assert "cancels noise, not shared bias" in result["stamp"]
+
+
+def test_panel_refuses_an_invented_draw_at_the_median() -> None:
+    draws = panel_draws()
+    draws[0]["pedigree"] = "invented"  # value 6 — the median of [4, 5, 6, 7, 7]
+    with pytest.raises(ValueError, match="refusing to compute"):
+        panel.numeric(draws)
+
+
+def test_panel_computes_an_invented_draw_away_from_the_median() -> None:
+    """The median is the instrument that neutralises a wild draw; refusing there is theatre."""
+    draws = panel_draws()
+    draws[2]["pedigree"] = "invented"  # value 4 — the minimum, not the median
+    result = panel.numeric(draws)
+    assert result["median"] == 6
+    assert "1 invented draw away from the median" in result["stamp"]
+    assert "inside the reported range" in result["stamp"]
+
+
+def test_panel_needs_a_named_source() -> None:
+    draws = panel_draws()
+    draws[1]["source"] = "  "
+    with pytest.raises(ValueError, match="source is required"):
+        panel.numeric(draws)
+
+
+def test_panel_needs_a_pedigree() -> None:
+    draws = panel_draws()
+    del draws[1]["pedigree"]
+    with pytest.raises(ValueError, match="pedigree is required"):
+        panel.numeric(draws)
 
 
 def test_panel_vote_plurality() -> None:
-    result = panel.vote(["A", "B", "A", "A", "C"])
+    result = panel.vote(VOTE_DRAWS)
     assert result["winner"] == "A"
     assert result["share"] == 0.6
     assert result["disagreement"] is False  # 0.6 < 0.6 is false: strict inequality
+    assert result["composition"] == {"opus": 3, "sonnet": 1, "human": 1}
 
 
 def test_panel_vote_tie() -> None:
-    result = panel.vote(["A", "B"])
+    result = panel.vote([{"choice": "A", "source": "opus"}, {"choice": "B", "source": "sonnet"}])
     assert result["tie"] is True
     assert result["winner"] is None
     assert result["disagreement"] is True
@@ -191,10 +322,58 @@ def test_panel_vote_tie() -> None:
 
 def test_panel_needs_two() -> None:
     with pytest.raises(ValueError, match="at least 2"):
-        panel.numeric([5.0])
+        panel.numeric([{"value": 5.0, "source": "opus", "pedigree": "elicited"}])
 
 
 # --- brier ------------------------------------------------------------------
+
+LEDGER: list[dict[str, Any]] = [
+    {
+        "id": "p-1",
+        "date": "2026-06-01",
+        "q": "CI stays green for 30 days",
+        "p": 0.8,
+        "resolve_by": "2026-07-01",
+        "outcome": 1,
+        "resolved_date": "2026-07-01",
+        "resolved_by": "ci",
+    },
+    {
+        "id": "p-2",
+        "date": "2026-06-02",
+        "q": "the migration lands this sprint",
+        "p": 0.6,
+        "resolve_by": "2026-09-01",
+        "outcome": None,
+    },
+    {
+        "id": "p-3",
+        "date": "2026-06-03",
+        "q": "the retry fix closes #88",
+        "p": 0.3,
+        "resolve_by": "2026-01-01",
+        "outcome": None,
+    },
+    {
+        "id": "p-4",
+        "date": "2026-06-04",
+        "q": "p99 stays under 200ms",
+        "p": 0.9,
+        "resolve_by": "2026-07-10",
+        "outcome": 0,
+        "resolved_date": "2026-07-10",
+        "resolved_by": "self",
+    },
+    {  # resolved before the field existed — reported as unrecorded, never assumed
+        "id": "p-5",
+        "date": "2026-06-05",
+        "q": "no rollback needed",
+        "p": 0.7,
+        "resolve_by": "2026-07-15",
+        "outcome": 1,
+        "resolved_date": "2026-07-15",
+    },
+]
 
 
 def test_brier_hand_computed() -> None:
@@ -210,12 +389,34 @@ def test_brier_hand_computed() -> None:
     assert result["bins"] == [{"lo": 0.8, "hi": 0.9, "n": 1, "stated_mean": 0.8, "hit_rate": 1.0}]
 
 
+def test_brier_ledger_hand_computed() -> None:
+    result = brier.report(LEDGER, today="2026-07-27")
+    # resolved: p-1 (0.8, 1), p-4 (0.9, 0), p-5 (0.7, 1) → (0.04 + 0.81 + 0.09) / 3
+    assert result["brier"] == pytest.approx(0.94 / 3)
+    assert result["mean_p"] == pytest.approx(0.8)
+    assert result["hit_rate"] == pytest.approx(2 / 3)
+    assert result["overdue_ids"] == ["p-3"]
+
+
+def test_brier_breaks_the_score_out_by_resolver() -> None:
+    """A ledger the predictor graded themselves has to say so on its own face."""
+    result = brier.report(LEDGER, today="2026-07-27")
+    assert result["by_resolver"] == [
+        {"resolver": "ci", "n": 1, "brier": pytest.approx(0.04)},
+        {"resolver": "self", "n": 1, "brier": pytest.approx(0.81)},
+        {"resolver": "unrecorded", "n": 1, "brier": pytest.approx(0.09)},
+    ]
+    assert result["n_self_resolved"] == 1
+
+
 def test_brier_no_resolved_entries() -> None:
     result = brier.report(
         [{"id": "p-1", "p": 0.5, "resolve_by": "2099-01-01", "outcome": None}], today="2026-07-27"
     )
     assert result["brier"] is None
     assert result["bins"] == []
+    assert result["by_resolver"] == []
+    assert result["n_self_resolved"] == 0
 
 
 def test_brier_rejects_bad_outcome() -> None:
@@ -228,10 +429,28 @@ def test_brier_rejects_bad_outcome() -> None:
 # --- fermi ------------------------------------------------------------------
 
 PIANO_FACTORS: list[dict[str, Any]] = [
-    {"name": "US households", "low": 1.2e8, "high": 1.4e8},
-    {"name": "share owning pianos", "low": 0.03, "high": 0.08, "op": "multiply"},
-    {"name": "tunings per piano per year", "low": 0.3, "high": 1.0, "op": "multiply"},
-    {"name": "tunings per tuner per year", "low": 600, "high": 1200, "op": "divide"},
+    {"name": "US households", "low": 1.2e8, "high": 1.4e8, "pedigree": "sourced"},
+    {
+        "name": "share owning pianos",
+        "low": 0.03,
+        "high": 0.08,
+        "op": "multiply",
+        "pedigree": "elicited",
+    },
+    {
+        "name": "tunings per piano per year",
+        "low": 0.3,
+        "high": 1.0,
+        "op": "multiply",
+        "pedigree": "elicited",
+    },
+    {
+        "name": "tunings per tuner per year",
+        "low": 600,
+        "high": 1200,
+        "op": "divide",
+        "pedigree": "sourced",
+    },
 ]
 
 
@@ -242,14 +461,55 @@ def test_fermi_piano_tuners() -> None:
     assert result["widest_factor"] == "tunings per piano per year"
 
 
+def test_fermi_load_bearing_is_uncertainty_not_magnitude() -> None:
+    """log-spans .0669 / .4260 / .5229 / .3010, mean .3292 — the two guesses clear it."""
+    assert fermi.combine(PIANO_FACTORS)["load_bearing"] == [
+        "share owning pianos",
+        "tunings per piano per year",
+    ]
+
+
+def test_fermi_refuses_an_invented_load_bearing_factor() -> None:
+    factors = [dict(f) for f in PIANO_FACTORS]
+    factors[2]["pedigree"] = "invented"  # tunings per piano — the widest factor
+    with pytest.raises(ValueError, match="refusing to compute"):
+        fermi.combine(factors)
+
+
+def test_fermi_computes_an_invented_factor_that_carries_little_uncertainty() -> None:
+    factors = [dict(f) for f in PIANO_FACTORS]
+    factors[0]["pedigree"] = "invented"  # household count: log-span .0669, well under the bar
+    result = fermi.combine(factors)
+    assert result["pedigree"] == {"sourced": 1, "elicited": 2, "invented": 1}
+
+
+def test_fermi_refuses_an_invented_point_estimate() -> None:
+    """A point range asserts a precision nobody sourced, however narrow the span."""
+    with pytest.raises(ValueError, match="asserting a precision nobody sourced"):
+        fermi.combine(
+            [
+                {"name": "wide", "low": 1.0, "high": 100.0, "pedigree": "sourced"},
+                {"name": "exact", "low": 8e9, "high": 8e9, "pedigree": "invented"},
+            ]
+        )
+
+
 def test_fermi_divide_interval() -> None:
     result = fermi.combine(
-        [{"name": "a", "low": 10, "high": 20}, {"name": "b", "low": 2, "high": 4, "op": "divide"}]
+        [
+            {"name": "a", "low": 10, "high": 20, "pedigree": "given"},
+            {"name": "b", "low": 2, "high": 4, "op": "divide", "pedigree": "given"},
+        ]
     )
     assert result["low"] == pytest.approx(2.5)  # 10/4
     assert result["high"] == pytest.approx(10.0)  # 20/2
 
 
+def test_fermi_needs_a_pedigree() -> None:
+    with pytest.raises(ValueError, match="pedigree is required"):
+        fermi.combine([{"name": "a", "low": 1, "high": 2}])
+
+
 def test_fermi_rejects_nonpositive_bound() -> None:
     with pytest.raises(ValueError, match="0 < low"):
-        fermi.combine([{"name": "a", "low": 0, "high": 1}])
+        fermi.combine([{"name": "a", "low": 0, "high": 1, "pedigree": "given"}])

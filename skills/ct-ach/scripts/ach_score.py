@@ -4,9 +4,15 @@ Input: matrix.json — see the ct-ach SKILL.md for the schema. Every
 (evidence x hypothesis) pair must be rated exactly once with C, I, or N.
 
 Rules applied (printed so a reader can check by hand):
-  inconsistency(H) = sum of evidence credibility over cells rated I
+  inconsistency(H) = sum of evidence credibility over cells rated I, counted once
+  per origin.
   ranking: ascending inconsistency — the survivor is the LEAST contradicted
   hypothesis, not the most supported one (Heuer, ch. 8).
+  origins: items sharing an `origin` are one observation. The cluster contributes
+  its best-evidenced I-rated member's credibility, once. Four restatements of one
+  shift-log entry would otherwise carry four independent weights and can
+  manufacture a confident wrong survivor out of a single source. Items with no
+  `origin` are their own origin, so an older matrix scores exactly as before.
   non-diagnostic evidence: rated identically for every hypothesis.
   sensitivity: single-cell rating changes that would swap ranks 1 and 2.
 """
@@ -49,12 +55,33 @@ def cell_map(m: dict[str, Any]) -> dict[tuple[str, str], str]:
     return {(r["evidence_id"], r["hypothesis_id"]): r["rating"] for r in m["ratings"]}
 
 
+def origins(m: dict[str, Any]) -> dict[str, str]:
+    """evidence id → origin id. An item with no `origin` is its own origin."""
+    return {e["id"]: str(e.get("origin") or e["id"]) for e in m["evidence"]}
+
+
+def clusters(m: dict[str, Any]) -> dict[str, list[str]]:
+    """Origins holding more than one item. Singletons are the default, so omitted."""
+    origin = origins(m)
+    grouped: dict[str, list[str]] = {}
+    for e in m["evidence"]:
+        grouped.setdefault(origin[e["id"]], []).append(e["id"])
+    return {name: ids for name, ids in grouped.items() if len(ids) > 1}
+
+
 def scores(m: dict[str, Any], cells: dict[tuple[str, str], str]) -> dict[str, int]:
+    """Weighted inconsistency per hypothesis, counting each origin at most once."""
     cred = {e["id"]: int(e["credibility"]) for e in m["evidence"]}
-    return {
-        h["id"]: sum(cred[e["id"]] for e in m["evidence"] if cells[(e["id"], h["id"])] == "I")
-        for h in m["hypotheses"]
-    }
+    origin = origins(m)
+    result: dict[str, int] = {}
+    for h in m["hypotheses"]:
+        per_origin: dict[str, int] = {}
+        for e in m["evidence"]:
+            if cells[(e["id"], h["id"])] == "I":
+                key = origin[e["id"]]
+                per_origin[key] = max(per_origin.get(key, 0), cred[e["id"]])
+        result[h["id"]] = sum(per_origin.values())
+    return result
 
 
 def diagnosticity(m: dict[str, Any], cells: dict[tuple[str, str], str]) -> dict[str, int]:
@@ -99,24 +126,39 @@ def main() -> None:
     tie = len(ranking) > 1 and s[ranking[0]] == s[ranking[1]]
     flips = sensitivity(m, cells, ranking[0], ranking[1]) if len(ranking) > 1 else []
 
+    cluster_map = clusters(m)
     result = {
         "scores": s,
         "ranking": ranking,
         "tied_top": tie,
         "non_diagnostic_evidence": non_diag,
         "rank_flip_cells": flips,
+        "origin_clusters": cluster_map,
+        "collapsed": [
+            f"{', '.join(ids)} → one origin ({name}); credibility counted once, "
+            f"not {len(ids)} times"
+            for name, ids in cluster_map.items()
+        ],
     }
     if args.json:
         print(json.dumps(result, indent=2))
         return
 
-    print("Rule: inconsistency(H) = sum of credibility over I-cells; survivor = lowest.")
+    print(
+        "Rule: inconsistency(H) = sum of credibility over I-cells, counted once per "
+        "origin; survivor = lowest."
+    )
     print(f"\nQuestion: {m['question']}\n\nRanking (least inconsistent first):")
     texts = {h["id"]: h["text"] for h in m["hypotheses"]}
     for i, h in enumerate(ranking, 1):
         print(f"  {i}. {h} (inconsistency {s[h]}): {texts[h]}")
     if tie:
         print("\nTIED TOP — the matrix does not decide; name the evidence that would.")
+    if result["collapsed"]:
+        print(f"\nOrigins collapsed ({len(cluster_map)}):")
+        for line in result["collapsed"]:
+            print(f"  {line}")
+        print("  Report distinct origins, never document counts.")
     if non_diag:
         print(f"\nNon-diagnostic evidence (same rating everywhere): {', '.join(non_diag)}")
         print("  These support every hypothesis equally — do not cite them for the winner.")

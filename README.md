@@ -2,16 +2,24 @@
 
 Critical-thinking for LLM agents, split the way the evidence says it should be:
 
-- **Recipes** (`skills/`) — fourteen Claude Code skills that turn validated
+- **Recipes** (`skills/`) — sixteen Claude Code skills that turn validated
   critical-thinking practices (steelmanning, competing-hypotheses analysis, premortems,
-  calibration score-keeping, …) into procedures a model actually runs. Whenever a recipe
-  needs an LLM judgment, the host model spawns a **fresh subagent** for it — a mind that
-  never saw the draft or the lean.
+  entailment checking, calibration score-keeping, …) into procedures a model actually
+  runs. Whenever a recipe needs an LLM judgment, the host model spawns a **fresh
+  subagent** for it — a mind that never saw the draft or the lean.
 - **Math** (`src/ctmcp/`) — a lean MCP server of **purely mathematical aggregators**
   that turn collected judgments into final decisions, deterministically: QBAF gradual
   semantics (DF-QuAD), ACH inconsistency scoring with flip-cell sensitivity, panel
   statistics, Brier calibration bins, Fermi interval arithmetic. No LLM calls, no state,
   no cleverness — same input, same output, rule printed with the result.
+- **Locks** (`hooks/`) — the harness rung between the two: standalone stdlib scripts the
+  agent runtime runs. Currently one `Stop` hook that refuses to end a turn shipping a
+  verdict with no gate file. See [hooks/README.md](hooks/README.md).
+- **Measurement** (`bench/`) — a seeded adversarial instance generator with hidden ground
+  truth, exact scorers, and the process-vs-artifact audit protocol. **Not in this
+  repository yet** — it is kept local while the instrument is still being corrected, so
+  references to `bench/` in the docs below describe work that exists but is unpublished.
+  Findings from it are quoted where they changed a decision.
 
 The design doctrine — which practices a skill can carry, which need machinery, and why —
 is in **[docs/critical-thinking-whitepaper.md](docs/critical-thinking-whitepaper.md)**.
@@ -33,7 +41,7 @@ Register the math server with Claude Code:
 claude mcp add critical-thinking -- uv run --directory /path/to/critical-thinking-mcp ctmcp
 ```
 
-The MCP server also advertises all fourteen recipes as `skill://` resources. An
+The MCP server also advertises all sixteen recipes as `skill://` resources. An
 MCP client can list `skill://<name>/SKILL.md` resources to discover the practices,
 then read a chosen one (and its supporting files) before calling its math tools. They
 remain live inside this repo too (`.claude/skills` → `skills/`); for hosts without MCP
@@ -54,3 +62,21 @@ or into `~/.claude/skills/` for global use.
 Honesty rule: these tools aggregate whatever they are given. Feed them self-assigned
 numbers and they will faithfully aggregate a lawyer's spreadsheet — label inputs
 (self-assigned vs subagent-elicited) when reporting results, as the recipes instruct.
+
+Two places the labelling is not left to you, because a disclaimer beside a number reads
+as care rather than as a warning:
+
+- **Pedigree gate.** `aggregate_numeric` and `combine_fermi` require a `pedigree` per
+  input — `given` / `sourced` / `elicited` / `invented` — and **refuse** when an
+  `invented` one is load-bearing. Load-bearing is mechanical, and each tool prints the
+  rule it used: for a panel, the draw at the median position; for a Fermi estimate, a
+  factor at or above the average share of the total `log10(high/low)`, or one stated as a
+  point. An invented outlier a median already absorbs still computes — and says so.
+- **Composition.** Every panel draw names its `source`, so five draws from one model and
+  three models plus a human stop printing identically. A panel of one model cancels
+  *noise*, not shared bias.
+
+`score_ach` deliberately has no pedigree gate: ordinal C/I/N cells over 1–3 credibility
+already sit near the honest resolution limit of the judgment, and the output is a ranking
+plus flip cells rather than a decimal. The gate belongs where exact arithmetic meets
+continuous invented inputs, not everywhere a judgment enters.

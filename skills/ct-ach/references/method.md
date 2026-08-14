@@ -25,6 +25,24 @@ Two Heuer points worth keeping verbatim in mind:
 - **The correct conclusion is the hypothesis with the *least evidence against it*.**
   Seeking confirmation instead is the natural, wrong move the matrix exists to block.
 
+## One addition Heuer's paper form did not need
+
+Heuer's analysts built matrices from a finite pile of physical reporting they had read.
+An agent assembles evidence from search results, tickets, chat logs and summaries, where
+**the same observation arrives repeatedly wearing different clothes**: the shift-log
+entry, the summary that copies it, the ticket citing the summary, the operator repeating
+it in the incident channel. Four rows, four credibility weights, one observation.
+
+Hence `origin`. Items tracing to the same observation share an origin id, and the cluster
+contributes **its best-evidenced I-rated member's credibility, once**. Without it, a
+single mid-credibility source restated four times outweighs a primary measurement, and
+the matrix returns a confident survivor built out of an echo. The collapse is printed
+with the ranking so a reader can check it by hand, and items with no `origin` are their
+own origin — a matrix that never uses the field scores exactly as it always did.
+
+`ct-entailment`'s `origins.py` proposes clusters from shared urls, quoting chains, and
+identical entity sequences. It proposes; you decide.
+
 ## Worked example (toy)
 
 Question: what explains the p99 latency spike at 14:02?

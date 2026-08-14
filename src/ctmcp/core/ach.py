@@ -1,9 +1,18 @@
 """ACH matrix scoring (Heuer 1999, *Psychology of Intelligence Analysis*, ch. 8).
 
-inconsistency(H) = Σ evidence credibility over cells rated I; the survivor is
-the LEAST contradicted hypothesis, not the most supported one. Non-diagnostic
-evidence is rated identically for every hypothesis. Sensitivity reports the
-single-cell rating changes that would strictly swap ranks 1 and 2.
+inconsistency(H) = Σ evidence credibility over cells rated I, counted once per
+ORIGIN; the survivor is the LEAST contradicted hypothesis, not the most supported
+one. Non-diagnostic evidence is rated identically for every hypothesis.
+Sensitivity reports the single-cell rating changes that would strictly swap
+ranks 1 and 2.
+
+Origins: evidence items may carry `origin`, naming the observation they trace
+back to. Four restatements of one shift-log entry — the note, its copy in a
+summary, a ticket citing it, an operator repeating it — are one observation, and
+counting four independent credibility weights from them can manufacture a
+confident wrong survivor out of a single source. A cluster contributes the
+credibility of its best-evidenced I-rated member, once. Items with no `origin`
+are their own origin, so a matrix that omits the field scores exactly as before.
 
 Kept in exact behavioral parity with skills/ct-ach/scripts/ach_score.py
 (pinned by tests/test_parity.py) — change both together or neither.
@@ -41,12 +50,33 @@ def _cell_map(matrix: dict[str, Any]) -> dict[tuple[str, str], str]:
     return {(r["evidence_id"], r["hypothesis_id"]): r["rating"] for r in matrix["ratings"]}
 
 
+def _origins(matrix: dict[str, Any]) -> dict[str, str]:
+    """evidence id → origin id. An item with no `origin` is its own origin."""
+    return {e["id"]: str(e.get("origin") or e["id"]) for e in matrix["evidence"]}
+
+
+def _clusters(matrix: dict[str, Any]) -> dict[str, list[str]]:
+    """Origins holding more than one item. Singletons are the default, so omitted."""
+    origin = _origins(matrix)
+    grouped: dict[str, list[str]] = {}
+    for e in matrix["evidence"]:
+        grouped.setdefault(origin[e["id"]], []).append(e["id"])
+    return {name: ids for name, ids in grouped.items() if len(ids) > 1}
+
+
 def _scores(matrix: dict[str, Any], cells: dict[tuple[str, str], str]) -> dict[str, int]:
+    """Weighted inconsistency per hypothesis, counting each origin at most once."""
     cred = {e["id"]: int(e["credibility"]) for e in matrix["evidence"]}
-    return {
-        h["id"]: sum(cred[e["id"]] for e in matrix["evidence"] if cells[(e["id"], h["id"])] == "I")
-        for h in matrix["hypotheses"]
-    }
+    origin = _origins(matrix)
+    scores: dict[str, int] = {}
+    for h in matrix["hypotheses"]:
+        per_origin: dict[str, int] = {}
+        for e in matrix["evidence"]:
+            if cells[(e["id"], h["id"])] == "I":
+                key = origin[e["id"]]
+                per_origin[key] = max(per_origin.get(key, 0), cred[e["id"]])
+        scores[h["id"]] = sum(per_origin.values())
+    return scores
 
 
 def _diagnosticity(matrix: dict[str, Any], cells: dict[tuple[str, str], str]) -> dict[str, int]:
@@ -78,7 +108,7 @@ def _sensitivity(
 
 
 def score(matrix: dict[str, Any]) -> dict[str, Any]:
-    """Rank hypotheses by weighted inconsistency; report ties, decoration, flip cells."""
+    """Rank by weighted inconsistency; report ties, decoration, collapses, flip cells."""
     _validate(matrix)
     cells = _cell_map(matrix)
     s = _scores(matrix, cells)
@@ -87,10 +117,17 @@ def score(matrix: dict[str, Any]) -> dict[str, Any]:
     non_diag = [e for e, d in diag.items() if d == 1]
     tie = len(ranking) > 1 and s[ranking[0]] == s[ranking[1]]
     flips = _sensitivity(matrix, cells, ranking[0], ranking[1]) if len(ranking) > 1 else []
+    clusters = _clusters(matrix)
     return {
         "scores": s,
         "ranking": ranking,
         "tied_top": tie,
         "non_diagnostic_evidence": non_diag,
         "rank_flip_cells": flips,
+        "origin_clusters": clusters,
+        "collapsed": [
+            f"{', '.join(ids)} → one origin ({name}); credibility counted once, "
+            f"not {len(ids)} times"
+            for name, ids in clusters.items()
+        ],
     }

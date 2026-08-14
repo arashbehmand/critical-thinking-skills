@@ -23,3 +23,9 @@ CLAUDE.local.md
 
 # macOS
 .DS_Store
+
+# bench/ is local-only measurement for now: a seeded instance generator, its scorers, and
+# the process-audit run artifacts. Kept out of the repo by request. tests/test_bench.py
+# imports it, so that travels with it or a fresh clone cannot collect the suite.
+bench/
+tests/test_bench.py

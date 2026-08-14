@@ -27,7 +27,9 @@ advice it half-remembers. Every skill in the set applies the same three moves:
 | rely on a claim with unstated premises | `ct-assumption-audit` |
 | conclude on a contested question | `ct-steelman`, then `ct-verdict-gate` |
 | choose between explanations of the same evidence | `ct-ach` |
+| want several fresh takes on one body of evidence, and to know what the answer rests on | `ct-ensemble` |
 | deliver a fact-heavy answer | `ct-evidence-ledger` |
+| check the sources actually say what the claims say | `ct-entailment` |
 | work a long multi-step task | `ct-consistency-log` |
 | make a noisy one-shot judgment (score, grade, pick-one) | `ct-panel` |
 | commit to a plan or irreversible decision | `ct-premortem` |
@@ -35,7 +37,10 @@ advice it half-remembers. Every skill in the set applies the same three moves:
 | produce a quantitative, contestable verdict on a claim | `ct-argument-map` (argLLM MCP) |
 
 Acts compose. A serious contested-claim job typically runs: `ct-definition-pin` →
-`ct-argument-map` (or `ct-steelman`) → `ct-evidence-ledger` → `ct-verdict-gate`.
+`ct-argument-map` (or `ct-steelman`) → `ct-evidence-ledger` → `ct-entailment` →
+`ct-verdict-gate`. The ledger grades sources while you draft; entailment checks, against
+the finished spine, that each source actually *entails* its claim — and collapses the
+sources by origin, so four restatements of one press release stop counting as four.
 
 ## Shared conventions (read before first use)
 
