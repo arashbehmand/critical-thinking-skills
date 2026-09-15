@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from ctmcp.core import ach, brier, fermi, panel, qbaf
+from ctmcp.core import ach, brier, dependencies, fermi, panel, qbaf
 
 # --- qbaf: DF-QuAD ----------------------------------------------------------
 
@@ -513,3 +513,52 @@ def test_fermi_needs_a_pedigree() -> None:
 def test_fermi_rejects_nonpositive_bound() -> None:
     with pytest.raises(ValueError, match="0 < low"):
         fermi.combine([{"name": "a", "low": 0, "high": 1, "pedigree": "given"}])
+
+
+# --- dependency truth maintenance ------------------------------------------
+
+DEPENDENCY_LOG: list[dict[str, Any]] = [
+    {"id": "c-1", "depends_on": []},
+    {"id": "c-2", "depends_on": ["c-1"]},
+    {"id": "c-3", "depends_on": ["c-2"]},
+    {"id": "c-4", "depends_on": []},
+    {"id": "c-5", "depends_on": ["c-1", "c-4"]},
+]
+
+
+def test_dependency_impact_is_transitive_and_hand_computed() -> None:
+    result = dependencies.analyze(DEPENDENCY_LOG, targets=["c-3", "c-5"])
+    assert result["statuses"] == {entry["id"]: "ACTIVE" for entry in DEPENDENCY_LOG}
+    assert result["critical"] == [
+        {"id": "c-1", "n_affected": 3, "affected": ["c-2", "c-3", "c-5"]},
+        {"id": "c-2", "n_affected": 1, "affected": ["c-3"]},
+        {"id": "c-4", "n_affected": 1, "affected": ["c-5"]},
+    ]
+    assert result["target_dependencies"] == {
+        "c-3": ["c-1", "c-2"],
+        "c-5": ["c-1", "c-4"],
+    }
+
+
+def test_dependency_status_propagates_a_supersession() -> None:
+    entries = [*DEPENDENCY_LOG, {"id": "c-6", "depends_on": [], "supersedes": "c-1"}]
+    assert dependencies.statuses(entries) == {
+        "c-1": "SUPERSEDED",
+        "c-2": "OUT",
+        "c-3": "OUT",
+        "c-4": "ACTIVE",
+        "c-5": "OUT",
+        "c-6": "ACTIVE",
+    }
+
+
+def test_dependency_status_treats_an_unknown_premise_as_out() -> None:
+    assert dependencies.statuses([{"id": "c-1", "depends_on": ["missing"]}]) == {"c-1": "OUT"}
+
+
+def test_dependency_analysis_rejects_duplicate_ids_and_nonactive_targets() -> None:
+    with pytest.raises(ValueError, match="duplicate dependency entry ids"):
+        dependencies.analyze([{"id": "c-1"}, {"id": "c-1"}])
+    entries = [{"id": "c-1"}, {"id": "c-2", "supersedes": "c-1"}]
+    with pytest.raises(ValueError, match="target entry is not active"):
+        dependencies.analyze(entries, targets=["c-1"])

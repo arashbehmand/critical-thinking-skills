@@ -2,16 +2,17 @@
 
 Critical-thinking for LLM agents, split the way the evidence says it should be:
 
-- **Recipes** (`skills/`) — sixteen Claude Code skills that turn validated
-  critical-thinking practices (steelmanning, competing-hypotheses analysis, premortems,
-  entailment checking, calibration score-keeping, …) into procedures a model actually
-  runs. Whenever a recipe needs an LLM judgment, the host model spawns a **fresh
-  subagent** for it — a mind that never saw the draft or the lean.
+- **Recipes** (`skills/`) — eighteen Claude Code skills led by an **autonomous
+  controller** that recognizes the problem shape, chooses the minimum useful act, and
+  treats `NO_SCAFFOLD` as a valid route. The user describes the problem; they do not
+  select techniques. Whenever a recipe needs an LLM judgment, the host spawns a **fresh
+  subagent** — a mind that never saw the draft or the lean.
 - **Math** (`src/ctmcp/`) — a lean MCP server of **purely mathematical aggregators**
   that turn collected judgments into final decisions, deterministically: QBAF gradual
   semantics (DF-QuAD), ACH inconsistency scoring with flip-cell sensitivity, panel
-  statistics, Brier calibration bins, Fermi interval arithmetic. No LLM calls, no state,
-  no cleverness — same input, same output, rule printed with the result.
+  statistics, Brier calibration bins, Fermi interval arithmetic, and truth-maintenance
+  withdrawal impact over recorded commitment dependencies. No LLM calls, no state, no
+  cleverness — same input, same output, rule printed with the result.
 - **Locks** (`hooks/`) — the harness rung between the two: standalone stdlib scripts the
   agent runtime runs. Currently one `Stop` hook that refuses to end a turn shipping a
   verdict with no gate file. See [hooks/README.md](hooks/README.md).
@@ -23,9 +24,9 @@ Critical-thinking for LLM agents, split the way the evidence says it should be:
 
 The design doctrine — which practices a skill can carry, which need machinery, and why —
 is in **[docs/critical-thinking-whitepaper.md](docs/critical-thinking-whitepaper.md)**.
-The one-line version: *method* lives in recipes, *judgments* come from fresh subagents,
-*verdicts* come from arithmetic. The full machinery tier for argument mapping (with
-server-side judgment elicitation) is the companion project
+The one-line version: *the controller selects, method lives in recipes, judgments come
+from fresh subagents, verdicts come from arithmetic*. The full machinery tier for
+argument mapping (with server-side judgment elicitation) is the companion project
 [argLLM](https://github.com/arashbehmand/argLLM).
 
 ## Install
@@ -41,10 +42,10 @@ Register the math server with Claude Code:
 claude mcp add critical-thinking -- uv run --directory /path/to/critical-thinking-mcp ctmcp
 ```
 
-The MCP server also advertises all sixteen recipes as `skill://` resources. An
-MCP client can list `skill://<name>/SKILL.md` resources to discover the practices,
-then read a chosen one (and its supporting files) before calling its math tools. They
-remain live inside this repo too (`.claude/skills` → `skills/`); for hosts without MCP
+The MCP server advertises all eighteen recipes as `skill://` resources. A client starts
+with `skill://critical-thinking/SKILL.md`; that controller silently routes the task and
+loads only the chosen act. It must not ask the user to browse or select the toolbox. The
+resources remain live inside this repo too (`.claude/skills` → `skills/`); for hosts without MCP
 skill-resource support, copy the skill directories into that project's `.claude/skills/`
 or into `~/.claude/skills/` for global use.
 
@@ -58,10 +59,13 @@ or into `~/.claude/skills/` for global use.
 | `aggregate_vote` | independent categorical picks | plurality + share, tie/weak-plurality flag |
 | `score_calibration` | resolved probability predictions | Brier score + per-bin stated-vs-happened |
 | `combine_fermi` | factor ranges for an estimate | interval arithmetic, geometric-mean point |
+| `analyze_dependencies` | an append-only commitment dependency record | simulate each active withdrawal; rank recorded transitive impact |
 
-Honesty rule: these tools aggregate whatever they are given. Feed them self-assigned
-numbers and they will faithfully aggregate a lawyer's spreadsheet — label inputs
-(self-assigned vs subagent-elicited) when reporting results, as the recipes instruct.
+Honesty rule: report separately what came from external evidence, what was independently
+computed, and what was only structured or elicited by the model. A deterministic tool is
+exact about its inputs; it does not certify that the model supplied a faithful
+formalisation. `analyze_dependencies`, for example, is exact about recorded edges and
+cannot detect a dependency the author never logged.
 
 Two places the labelling is not left to you, because a disclaimer beside a number reads
 as care rather than as a warning:

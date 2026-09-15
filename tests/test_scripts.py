@@ -1,9 +1,8 @@
-"""Bundled skill scripts that have no core mirror — bookkeeping, not arithmetic.
+"""Bundled skill-script CLI behavior beyond the core parity tests.
 
-`origins.py` and `commitlog.py` do not appear in `tests/test_parity.py` because there is
-nothing in `ctmcp.core` for them to agree with: conventions §3 lists only the four maths
-scripts. They still need pinning, so they are driven here through their real CLI, the
-same way the parity tests drive theirs.
+`commitlog.py impact` has a core mirror pinned in `tests/test_parity.py`; its append-only
+I/O and human reports do not. `origins.py` remains standalone bookkeeping. Both are driven
+here through their real CLI.
 """
 
 import json
@@ -228,6 +227,26 @@ def test_entry_depending_on_a_missing_id_is_out(tmp_path: Path) -> None:
     result = run(COMMITLOG, ["check", "--file", str(log)])
     assert result.returncode == 1
     assert "c-99 (no such entry)" in result.stdout
+
+
+def test_impact_ranks_transitive_recorded_blast_radius(tmp_path: Path) -> None:
+    log = tmp_path / "c.jsonl"
+    chain(log)
+    result = run(COMMITLOG, ["impact", "--file", str(log), "--targets", "c-3"])
+    assert result.returncode == 0
+    assert "c-1: 2 affected — c-2, c-3" in result.stdout
+    assert "c-2: 1 affected — c-3" in result.stdout
+    assert "Recorded dependencies carrying c-3: c-1, c-2" in result.stdout
+    assert "exact about the record" in result.stdout
+
+
+def test_impact_refuses_a_nonactive_target(tmp_path: Path) -> None:
+    log = tmp_path / "c.jsonl"
+    chain(log)
+    add(log, "retry budget is 5 attempts", tags="retries", supersedes="c-1")
+    result = run(COMMITLOG, ["impact", "--file", str(log), "--targets", "c-3"])
+    assert result.returncode != 0
+    assert "target entry is not active" in result.stderr
 
 
 # --- bag.py (ct-ensemble) ---------------------------------------------------

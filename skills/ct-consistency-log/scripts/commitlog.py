@@ -12,6 +12,10 @@ Two different failures, two different sweeps, and both are needed:
   still rests on it" — a failure invisible in the output by construction, because a
   conclusion resting on a retracted premise looks exactly like a correct one.
 
+  `impact` removes each ACTIVE entry in simulation and ranks it by the live claims
+  that become OUT. It identifies where verification effort matters inside the recorded
+  graph; it does not certify that the graph faithfully represents the reasoning.
+
 Status is COMPUTED, never written: the log stays append-only (conventions §4).
 SUPERSEDED = some later entry supersedes it. OUT = depends, transitively, on something
 not live. ACTIVE = everything else. The walk deliberately over-marks when edges are
@@ -33,8 +37,8 @@ PAIR_CAP = 100
 CAVEAT = (
     "Caveat: this record is model-authored, and this detects inconsistencies among "
     "recorded dependencies only. Dependencies never noticed are absent; dependencies "
-    "imagined are present. Nothing here is a structural certificate — no minimum cut, "
-    "no weakest link. It is exact about the record and says nothing about the reasoning."
+    "imagined are present. Withdrawal impact is exact about the record; it is not a "
+    "structural or epistemic certificate about the reasoning."
 )
 
 
@@ -124,6 +128,86 @@ def _cycles(entries: list[dict[str, Any]]) -> list[list[str]]:
         if colour[node] == 0:
             walk(node, [node])
     return found
+
+
+def _validate_impact(entries: list[dict[str, Any]]) -> None:
+    ids = [str(entry.get("id") or "").strip() for entry in entries]
+    if any(not entry_id for entry_id in ids):
+        raise ValueError("every dependency entry needs a non-empty id")
+    if len(set(ids)) != len(ids):
+        raise ValueError("duplicate dependency entry ids")
+    for entry in entries:
+        depends_on = entry.get("depends_on", [])
+        if not isinstance(depends_on, list) or any(not isinstance(dep, str) for dep in depends_on):
+            raise ValueError(f"{entry['id']}: depends_on must be a list of ids")
+        if len(set(depends_on)) != len(depends_on):
+            raise ValueError(f"{entry['id']}: duplicate ids in depends_on")
+        if entry["id"] in depends_on:
+            raise ValueError(f"{entry['id']}: an entry cannot depend directly on itself")
+
+
+def _statuses_with_withdrawal(
+    entries: list[dict[str, Any]], withdrawn: str | None = None
+) -> dict[str, str]:
+    _validate_impact(entries)
+    superseded = {str(entry["supersedes"]) for entry in entries if entry.get("supersedes")}
+    known = {str(entry["id"]) for entry in entries}
+    if withdrawn is not None and withdrawn not in known:
+        raise ValueError(f"unknown withdrawn entry: {withdrawn}")
+    status = {
+        str(entry["id"]): "SUPERSEDED" if entry["id"] in superseded else "ACTIVE"
+        for entry in entries
+    }
+    if withdrawn is not None:
+        if status[withdrawn] != "ACTIVE":
+            raise ValueError(f"cannot simulate withdrawal of non-active entry: {withdrawn}")
+        status[withdrawn] = "WITHDRAWN"
+    edges = {str(entry["id"]): list(entry.get("depends_on", [])) for entry in entries}
+
+    changed = True
+    while changed:
+        changed = False
+        for entry_id, parents in edges.items():
+            if status[entry_id] != "ACTIVE":
+                continue
+            if any(parent not in known or status[parent] != "ACTIVE" for parent in parents):
+                status[entry_id] = "OUT"
+                changed = True
+    return status
+
+
+def impact(entries: list[dict[str, Any]], targets: list[str] | None = None) -> dict[str, Any]:
+    """Exact withdrawal impact over the recorded dependency graph."""
+    base = _statuses_with_withdrawal(entries)
+    active = sorted(entry_id for entry_id, status in base.items() if status == "ACTIVE")
+    target_ids = list(dict.fromkeys(targets or []))
+    for target in target_ids:
+        if target not in base:
+            raise ValueError(f"unknown target entry: {target}")
+        if base[target] != "ACTIVE":
+            raise ValueError(f"target entry is not active: {target} ({base[target]})")
+
+    rows: list[dict[str, Any]] = []
+    target_impact: dict[str, list[str]] = {target: [] for target in target_ids}
+    for candidate in active:
+        trial = _statuses_with_withdrawal(entries, withdrawn=candidate)
+        affected = sorted(
+            entry_id for entry_id in active if entry_id != candidate and trial[entry_id] == "OUT"
+        )
+        row = {"id": candidate, "n_affected": len(affected), "affected": affected}
+        rows.append(row)
+        for target in target_ids:
+            if target in affected:
+                target_impact[target].append(candidate)
+
+    rows.sort(key=lambda row: (-int(row["n_affected"]), str(row["id"])))
+    return {
+        "statuses": base,
+        "active": active,
+        "withdrawal_impact": rows,
+        "critical": [row for row in rows if row["n_affected"] > 0],
+        "target_dependencies": target_impact,
+    }
 
 
 def cmd_add(args: argparse.Namespace) -> None:
@@ -254,6 +338,29 @@ def cmd_check(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
+def cmd_impact(args: argparse.Namespace) -> None:
+    entries = read(Path(args.file))
+    targets = [target.strip() for target in args.targets.split(",") if target.strip()]
+    try:
+        result = impact(entries, targets)
+    except ValueError as err:
+        sys.exit(str(err))
+    if args.json:
+        print(json.dumps(result, indent=2))
+        return
+
+    critical = result["critical"]
+    if critical:
+        print("WITHDRAWAL IMPACT — live claims knocked OUT in the recorded graph:\n")
+        for row in critical:
+            print(f"  {row['id']}: {row['n_affected']} affected — {', '.join(row['affected'])}")
+    else:
+        print("No active entry has a recorded transitive dependent.")
+    for target, premises in result["target_dependencies"].items():
+        print(f"\nRecorded dependencies carrying {target}: {', '.join(premises) or '(none)'}")
+    print(f"\n{CAVEAT}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -281,6 +388,12 @@ def main() -> None:
     p_check.add_argument("--file", required=True)
     p_check.add_argument("--fanout", type=int, default=3, help="shared-premise reporting threshold")
     p_check.set_defaults(func=cmd_check)
+
+    p_impact = sub.add_parser("impact", help="simulate each withdrawal and rank its blast radius")
+    p_impact.add_argument("--file", required=True)
+    p_impact.add_argument("--targets", default="", help="comma-separated active conclusion ids")
+    p_impact.add_argument("--json", action="store_true")
+    p_impact.set_defaults(func=cmd_impact)
 
     args = parser.parse_args()
     args.func(args)

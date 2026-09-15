@@ -1,6 +1,6 @@
 ---
 name: ct-consistency-log
-description: Log every decision and factual position taken during long multi-step work along with what it rests on, sweep the log for contradictions with a fresh subagent, and walk the dependency edges so a retraction knocks out everything built on it. Use for tasks spanning many steps or sessions - migrations, long documents, multi-file refactors, investigations; or when the user says "didn't you say earlier", "we changed our mind about that", or "keep our decisions straight".
+description: Log every decision and factual position taken during long multi-step work along with what it rests on, sweep for contradictions, propagate retractions, and simulate each premise's withdrawal to show which recorded claims it carries. Use for tasks spanning many steps or sessions - migrations, long documents, multi-file refactors, investigations; or when the user says "didn't you say earlier", "we changed our mind about that", "what is load-bearing", or "keep our decisions straight".
 argument-hint: [optional topic slug for the log file]
 ---
 
@@ -58,10 +58,26 @@ resting on a retracted premise looks exactly like a correct one.
    Reports `OUT` entries with the withdrawn premise each rests on, circular support, and
    shared premises carrying several live claims at once. It exits non-zero while any
    `OUT` entry remains.
-5. **Resolve every flag.** A `CONTRADICT` is resolved by superseding one side explicitly
+5. **Rank recorded withdrawal impact** when the log informs a consequential conclusion:
+
+   ```sh
+   python3 skills/ct-consistency-log/scripts/commitlog.py impact \
+     --file .ct/commitments--<slug>.jsonl --targets c-18
+   ```
+
+   The script removes every ACTIVE entry in simulation, repeats the same transitive
+   status walk, and reports which live claims become `OUT`. `--targets` optionally names
+   final conclusions; the output then lists every recorded premise whose withdrawal
+   knocks each target out. Check the highest-impact premises first. This is more useful
+   than direct fan-out: a premise with one child can still carry the whole downstream
+   deliverable.
+
+   Where the MCP server is registered, `analyze_dependencies` computes the same result
+   from the entries directly. Script and core parity tests pin the two implementations.
+6. **Resolve every flag.** A `CONTRADICT` is resolved by superseding one side explicitly
    or recording next to the pair why both stand. An `OUT` entry is **re-derived from live
    premises or dropped** — never quietly kept. Both block the deliverable.
-6. **Pre-delivery check:** every load-bearing claim in the final answer traces to a live
+7. **Pre-delivery check:** every load-bearing claim in the final answer traces to a live
    entry. Any that does not is the bug.
 
 ## Status
@@ -100,6 +116,7 @@ boundaries; run `pairs --all` before the final sweep to catch cross-tag clashes.
 - The log written once, at the end.
 - Corrections that produce no `OUT` marks: either nothing rested on the retracted claim,
   or the edges were never recorded.
+- An `impact` report treated as evidence that the recorded dependencies are complete.
 - A final answer citing an `OUT` entry.
 
 ## Limits
@@ -110,10 +127,11 @@ carries a caveat it prints on every run: **the record is model-authored, so this
 inconsistencies among recorded dependencies only.** Writing claims and support edges into
 a ledger is itself an encoding of ambiguous reasoning into graph form, performed one
 assertion at a time by the same fallible model — dependencies it did not notice are
-absent, dependencies it imagined are present. Anything computed over that record is exact
-*about the record* and says nothing about the reasoning; claim no structural certificate
-from it. Machinery would be a boundary that logs commitments automatically into an
-append-only store. See `docs/critical-thinking-whitepaper.md`.
+absent, dependencies it imagined are present. Retraction and withdrawal impact are exact
+*about the record* and say nothing about unrecorded reasoning; an impact rank is a
+verification-budget heuristic, not a structural or epistemic certificate. Machinery
+would be a boundary that logs commitments automatically into an append-only store. See
+`docs/critical-thinking-whitepaper.md`.
 
 Part of the critical-thinking set — see the `critical-thinking` skill for routing and
 shared conventions.

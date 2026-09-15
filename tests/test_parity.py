@@ -13,8 +13,16 @@ from typing import Any
 
 import pytest
 
-from ctmcp.core import ach, brier, fermi, panel
-from tests.test_core import LEDGER, PIANO_FACTORS, TOY_MATRIX, VOTE_DRAWS, echo_matrix, panel_draws
+from ctmcp.core import ach, brier, dependencies, fermi, panel
+from tests.test_core import (
+    DEPENDENCY_LOG,
+    LEDGER,
+    PIANO_FACTORS,
+    TOY_MATRIX,
+    VOTE_DRAWS,
+    echo_matrix,
+    panel_draws,
+)
 
 REPO = Path(__file__).resolve().parent.parent
 SKILLS = REPO / "skills"
@@ -120,3 +128,13 @@ def test_brier_script_matches_core(tmp_path: Path) -> None:
         ["report", "--file", str(ledger), "--json", "--today", "2026-07-27"],
     )
     assert script == brier.report(LEDGER, today="2026-07-27")
+
+
+def test_dependency_impact_script_matches_core(tmp_path: Path) -> None:
+    log = tmp_path / "commitments.jsonl"
+    log.write_text("".join(json.dumps(entry) + "\n" for entry in DEPENDENCY_LOG))
+    script = run_json(
+        SKILLS / "ct-consistency-log/scripts/commitlog.py",
+        ["impact", "--file", str(log), "--targets", "c-3,c-5", "--json"],
+    )
+    assert script == dependencies.analyze(DEPENDENCY_LOG, targets=["c-3", "c-5"])

@@ -169,3 +169,50 @@ The line about absence is load-bearing. An agent holding two thirds of a dossier
 otherwise read a missing metric as a nominal one and manufacture a contradiction out of
 its own incomplete view. Never tell it how large the full dossier is, which items were
 withheld, or that other agents exist — that is the decorrelation you are paying for.
+
+## T11 — Alternative framer (ct-reframe)
+
+> Treat the question below as a description of a situation, not necessarily as the right
+> question to answer.
+>
+> Asked question: <verbatim>
+> Raw observations and constraints: <facts only; no proposed answer or preferred frame>
+>
+> Produce three materially different frames. Each must change what is treated as the
+> target, boundary, unit of analysis, or success criterion — three paraphrases do not
+> count. Include one frame in which the most surprising observation is the starting
+> point, and one that releases a constraint the question appears to take for granted.
+>
+> For each output exactly:
+> `FRAME: <one-sentence question>`
+> `REVEALS: <what becomes visible>`
+> `HIDES: <what this frame could miss>`
+> `WRONG-IF: <one observable condition that would make this a bad frame>`
+>
+> End with `ANOMALY: <the observation least well explained by the original frame>`.
+
+## T12 — Counterexample hunter (ct-counterexample)
+
+> Try to break the claim below. You are not reviewing its wording or offering general
+> objections; search for the smallest concrete case satisfying its stated premises in
+> which its conclusion fails.
+>
+> Claim: <verbatim, with operational definitions>
+> Admissible domain and premises: <verbatim>
+> Available raw materials: <specification, examples, data, or none>
+>
+> Output exactly one of:
+>
+> `WITNESS: <smallest concrete counterexample>`
+> `PREMISES: <why it is admissible>`
+> `FAILURE: <the exact conclusion it falsifies>`
+> `SHRINK: <what was removed while preserving the failure>`
+>
+> or
+>
+> `NONE FOUND`
+> `SEARCHED: <the cases or construction families actually examined>`
+> `BOUNDARY: <what remained unsearched and therefore unproved>`
+
+> Do not call `NONE FOUND` proof. Do not weaken or reinterpret a premise to manufacture
+> a witness.

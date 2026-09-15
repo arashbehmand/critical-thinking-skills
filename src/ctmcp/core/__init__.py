@@ -2,5 +2,6 @@
 
 Modules: qbaf (DF-QuAD gradual semantics), ach (Heuer inconsistency scoring),
 panel (independent-draw statistics), brier (calibration scoring), fermi
-(interval arithmetic). Every formula's docstring cites its source.
+(interval arithmetic), dependencies (truth-maintenance withdrawal impact).
+Every formula or algorithm's docstring cites its source.
 """

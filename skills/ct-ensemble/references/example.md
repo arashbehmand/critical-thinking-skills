@@ -1,17 +1,18 @@
-# Worked example — real output, real agents
+# Historical worked example — real output, real agents
 
-Run on `bench/generate_instance.py --seed 7`: a 22-item incident dossier, four
+Run on the pre-2026-08-14 `bench/generate_instance.py --seed 7`: a 22-item incident dossier, four
 hypotheses, one true cause hidden in the answer key. Seven perspectives, each shown 14
 of the 22 items. Nothing here is invented for the documentation; the verdicts came from
-seven fresh agents and the numbers from `bag.py`.
+seven fresh agents and the numbers from `bag.py`. This is a frozen measurement record,
+not a reproducible command against the current generator: the packet was later repaired
+to expose its authoritative synthetic prediction model, remove impossible probe-value
+questions, and keep the key out of the solver directory.
 
 ## The draw
 
-```sh
-python3 bench/generate_instance.py --seed 7 --out /tmp/ens
-python3 skills/ct-ensemble/scripts/bag.py draw \
-  --evidence /tmp/ens/instance.json --n 7 --rate 0.65 --seed 1 --json > /tmp/ens/draws.json
-```
+The recorded draw used seven subsets at rate 0.65 and seed 1. Re-running those parameters
+against the current generator creates a different, validity-repaired packet and must be
+treated as a new experiment.
 
 > Rule: 7 subsets, 14 of 22 items each (65%), sampled without replacement, seed 1. Every
 > item is included in at least one subset and left out of at least one, so every item gets

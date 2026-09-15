@@ -3,9 +3,10 @@
 Critical-thinking practices for LLM agents, delivered as **recipes + math**. Recipes
 (the skills in `skills/`) are procedures the host model follows; whenever a recipe needs
 an LLM judgment it has the host spawn a **fresh subagent** for it. The MCP server here
-is deliberately the opposite of clever: a **lean set of purely mathematical functions**
-that aggregate collected judgments into final decisions (QBAF gradual semantics, ACH
-inconsistency scoring, panel statistics, Brier calibration, Fermi intervals).
+is deliberately the opposite of clever: a **lean set of purely deterministic functions**
+that aggregate collected judgments or inspect recorded structure (QBAF gradual
+semantics, ACH inconsistency scoring, panel statistics, Brier calibration, Fermi
+intervals, truth-maintenance withdrawal impact).
 
 Companion project: **argLLM** (`~/Projects/argLLM`) — the full machinery tier for
 argument mapping, with server-side judgment elicitation. The design doctrine shared by
@@ -42,8 +43,9 @@ bench/                  measurement, not shipped and currently NOT COMMITTED (.g
   load-bearing input; each states the *mechanical* rule by which it decided that, because
   a load-bearing test left to judgment is a label again.
 - **`core/` is pure**: functions of plain data; no I/O, no MCP imports, deterministic.
-  Every formula's docstring cites its source (DF-QuAD — Rago et al. 2016, as used in
-  Freedman et al. 2024 arXiv:2405.02079; ACH — Heuer 1999 ch. 8; Brier 1950).
+  Every formula or algorithm's docstring cites its source (DF-QuAD — Rago et al. 2016,
+  as used in Freedman et al. 2024 arXiv:2405.02079; ACH — Heuer 1999 ch. 8; Brier 1950;
+  truth maintenance — Doyle 1979).
 - **`server/` is thin**: pydantic input models, calls into core, sets tool annotations.
   Every tool is pure → `readOnlyHint=True, idempotentHint=True`, always.
 - **Bundled skill scripts stay standalone.** `skills/*/scripts/*.py` are stdlib-only on

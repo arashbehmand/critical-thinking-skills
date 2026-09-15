@@ -39,10 +39,11 @@ different model family or a human.
 ## 3. Script arithmetic
 
 Combining numbers — scores, counts, ranges, probabilities — is done by the bundled
-scripts (`fermi.py`, `ach_score.py`, `aggregate.py`, `brier.py`, `origins.py`, `bag.py`), never in
-prose. Each script prints the rule it applied so a reader can check it by hand. Counting
-sources is arithmetic too: `origins.py` reports **distinct origins**, and a citation count
-that never drops below the document count means the collapse never ran.
+scripts (`fermi.py`, `ach_score.py`, `aggregate.py`, `brier.py`, `origins.py`, `bag.py`,
+`commitlog.py`), never in prose. Each script prints the rule it applied so a reader can
+check it by hand. Counting sources is arithmetic too: `origins.py` reports **distinct
+origins**, and a citation count that never drops below the document count means the
+collapse never ran.
 
 - *Failure mode closed:* holistic in-head aggregation, which is where noise and
   motivated rounding live.
@@ -53,7 +54,8 @@ adjust the base path to wherever the skill landed (e.g.
 `.claude/skills/<skill>/scripts/…`). Where the critical-thinking-mcp math server is
 registered, the same rules are also available as pure MCP tools (`evaluate_qbaf`,
 `score_ach`, `aggregate_numeric`, `aggregate_vote`, `score_calibration`,
-`combine_fermi`) — script and server compute identical results by pinned parity tests.
+`combine_fermi`, `analyze_dependencies`) — where a script and server expose the same
+computation, pinned parity tests require identical results.
 
 ## 4. Append-only ledgers
 
@@ -69,7 +71,35 @@ deliberately over-marks when edges are missing.
 - *Failure mode closed:* quiet retroactive harmonizing — the record always agreeing with
   the present.
 
-## 5. Enforcement honesty
+## 5. Epistemic leverage and provenance
+
+Every consequential act distinguishes three things that polished prose tends to blur:
+
+- **Evidence added** — a retrieval, observation, execution result, database answer, or
+  genuinely external judgment supplied information not present in the model-only pass.
+- **Independent computation added** — deterministic arithmetic, search, validation, or
+  a formal checker constrained the answer. It may add no world evidence, but it replaces
+  fallible in-head computation on the property it actually checks.
+- **Structure added** — decomposition, reframing, a fresh same-model context, or a ledger
+  made omissions, alternatives, or disagreement visible. It can improve extraction and
+  contestability; it is not new evidence about the world.
+
+Before escalating, name privately which of these the next act contributes. If it adds
+none, or if its contribution does not address a named failure signal, stop. In a
+consequential delivered answer, state the distinction wherever a reader could otherwise
+mistake a model-only panel or a formal result over model-authored inputs for independent
+grounding.
+
+**Confidence does not rise merely because prose passed through more model-only stages.**
+It may rise when a stage exposes and resolves an omission, but the reason must be the
+resolved item, not the existence of a tree, debate, or receipt. A solver certifies the
+encoded statement; a dependency walk is exact about recorded edges; neither certifies
+that the model encoded the situation faithfully.
+
+- *Failure mode closed:* reasoning ceremony laundering correlated model output into
+  apparent evidence or certificate-grade authority.
+
+## 6. Enforcement honesty
 
 These conventions are discipline, not guarantees: nothing here *prevents* a skipped
 sweep, a contaminated prompt, or an edited ledger line. When an act's value depends on a

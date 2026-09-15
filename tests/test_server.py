@@ -13,6 +13,7 @@ EXPECTED_TOOLS = {
     "aggregate_vote",
     "score_calibration",
     "combine_fermi",
+    "analyze_dependencies",
 }
 
 EXPECTED_SKILLS = {
@@ -22,6 +23,7 @@ EXPECTED_SKILLS = {
     "ct-assumption-audit",
     "ct-calibration",
     "ct-consistency-log",
+    "ct-counterexample",
     "ct-definition-pin",
     "ct-ensemble",
     "ct-entailment",
@@ -30,6 +32,7 @@ EXPECTED_SKILLS = {
     "ct-premortem",
     "ct-question-tree",
     "ct-reformat",
+    "ct-reframe",
     "ct-steelman",
     "ct-verdict-gate",
 }
@@ -176,3 +179,25 @@ async def test_validation_errors_are_tool_errors() -> None:
                 "evaluate_qbaf",
                 {"arguments": [{"id": "a", "base_score": 0.5}, {"id": "b", "base_score": 0.5}]},
             )
+
+
+async def test_analyze_dependencies_end_to_end() -> None:
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "analyze_dependencies",
+            {
+                "entries": [
+                    {"id": "c-1"},
+                    {"id": "c-2", "depends_on": ["c-1"]},
+                    {"id": "c-3", "depends_on": ["c-2"]},
+                    {"id": "c-4"},
+                ],
+                "targets": ["c-3"],
+            },
+        )
+        assert result.data["critical"] == [
+            {"id": "c-1", "n_affected": 2, "affected": ["c-2", "c-3"]},
+            {"id": "c-2", "n_affected": 1, "affected": ["c-3"]},
+        ]
+        assert result.data["target_dependencies"] == {"c-3": ["c-1", "c-2"]}
+        assert "recorded edges only" in result.data["rule"]

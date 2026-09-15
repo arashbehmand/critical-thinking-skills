@@ -16,7 +16,7 @@ from fastmcp.exceptions import ToolError
 from fastmcp.server.providers.skills import SkillsDirectoryProvider
 from pydantic import BaseModel, Field
 
-from ctmcp.core import ach, brier, fermi, panel, qbaf
+from ctmcp.core import ach, brier, dependencies, fermi, panel, qbaf
 
 PURE = {"readOnlyHint": True, "idempotentHint": True}
 SKILLS_DIRECTORY = Path(__file__).resolve().parents[3] / "skills"
@@ -24,15 +24,16 @@ SKILLS_DIRECTORY = Path(__file__).resolve().parents[3] / "skills"
 mcp: FastMCP[None] = FastMCP(
     name="critical-thinking-mcp",
     instructions=(
-        "Critical-thinking recipes plus pure mathematical aggregators. Start by listing "
-        "the skill:// resources to discover the practices, then read the chosen "
-        "SKILL.md (and supporting files) before calling a tool. The tools are only the "
-        "deterministic arithmetic backends: the recipes supply the method, prompts, "
-        "and receipt workflow. They turn judgments you collected (ideally from fresh "
-        "subagents that never saw your lean) into decisions. No tool here calls an LLM "
-        "or keeps state. "
+        "Critical-thinking recipes plus pure deterministic aggregators. Read "
+        "skill://critical-thinking/SKILL.md first: it silently routes the user's problem "
+        "to the minimum useful act, including NO_SCAFFOLD, so do not ask the user to "
+        "choose a technique. Then read only the selected skill and its supporting files. "
+        "The tools are deterministic backends: recipes supply method, prompts, and "
+        "receipts; judgments stay host-side, ideally in fresh contexts. No tool calls an "
+        "LLM or keeps state. "
         "Honesty rule: these tools aggregate whatever they are given — when reporting "
-        "results, label the inputs (self-assigned vs subagent-elicited)."
+        "results, separate external evidence, independent computation, and model-only "
+        "structure or elicitation."
     ),
 )
 mcp.add_provider(SkillsDirectoryProvider(roots=SKILLS_DIRECTORY))
@@ -111,6 +112,12 @@ class Factor(BaseModel):
     high: float = Field(gt=0.0)
     op: Literal["multiply", "divide"] = "multiply"
     pedigree: Pedigree = Field(description=PEDIGREE_DOC)
+
+
+class DependencyEntry(BaseModel):
+    id: str
+    depends_on: list[str] = Field(default_factory=list)
+    supersedes: str | None = None
 
 
 @mcp.tool(annotations=PURE)
@@ -253,6 +260,35 @@ def combine_fermi(factors: list[Factor]) -> dict[str, Any]:
         "multiply [a,b]*[c,d]=[ac,bd]; divide [a,b]/[c,d]=[a/d,b/c]; "
         "point = product of geometric means; load-bearing = |log10(geometric mean)| "
         "at or above the average across factors — an invented one there is refused"
+    )
+    return result
+
+
+@mcp.tool(annotations=PURE)
+def analyze_dependencies(
+    entries: list[DependencyEntry], targets: list[str] | None = None
+) -> dict[str, Any]:
+    """Rank recorded commitments by the impact of withdrawing each one.
+
+    Status follows append-only truth maintenance: superseded entries are not
+    live, and every entry depending directly or transitively on a non-live
+    premise is OUT. For each ACTIVE entry, simulate its withdrawal and report
+    which other live entries fall. Optional `targets` names active conclusions
+    whose recorded load-bearing dependencies should be listed.
+
+    Exact about the supplied dependency graph, not about the underlying
+    reasoning: missing or imagined edges remain the caller's responsibility.
+    """
+    try:
+        result = dependencies.analyze(
+            [entry.model_dump() for entry in entries], targets=targets or []
+        )
+    except ValueError as err:
+        raise ToolError(str(err)) from err
+    result["rule"] = (
+        "truth maintenance (Doyle 1979): superseded or withdrawn premises are non-live; "
+        "OUT propagates transitively; withdrawal impact counts ACTIVE dependents newly "
+        "made OUT. Exact about recorded edges only — not a certificate of completeness."
     )
     return result
 

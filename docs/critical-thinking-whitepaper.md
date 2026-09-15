@@ -2,7 +2,7 @@
 
 **A critical-thinking skill set, and the line where skills end and machinery begins**
 
-*White paper v1.2 · critical-thinking-mcp project · August 2026*
+*White paper v1.3 · critical-thinking-mcp project · August 2026*
 
 ---
 
@@ -13,7 +13,7 @@ from human thinking: writing intermediate steps down. This paper argues that
 chain-of-thought was the first item taken from a much longer, better-tested library —
 the critical-thinking practices that human sciences have validated over seventy years —
 and that the rest of the library can now be systematically translated for LLM agents.
-We catalog sixteen critical-thinking *acts*, derive each from established findings in
+We catalog eighteen critical-thinking *acts*, derive each from established findings in
 cognitive science, and translate them into agent capabilities. The central design
 question is the delivery vehicle. We show that the acts split cleanly along one line —
 **does the act still work when the model is being a lawyer?** Acts that survive
@@ -21,7 +21,7 @@ motivated reasoning ship as *skills* (procedures, templates, and small determini
 scripts loaded into context). Acts whose value depends on a *guarantee* — validated
 structure, judgment sourcing from uncontaminated contexts, tamper-evident records,
 enforced gates — need *machinery*: code that runs outside the model's control. We ship
-the skill tier as sixteen working skills accompanying this paper, classify every act
+the skill tier as eighteen working skills accompanying this paper, classify every act
 across three tiers (skill / harness / service), and present the argLLM server — an
 implementation of Argumentative LLMs (Freedman et al. 2024) — as the worked example of
 the machinery tier. Transparency is a by-product of this architecture rather than an
@@ -198,6 +198,17 @@ usually true about thinking; what externalizing/mechanizing/contesting it buys.*
     evidence, votes aggregate mechanically, and permutation importance over the subsets
     reports which evidence the verdict actually rests on.
 
+17. **Reframe and anomaly hunt.** A question silently fixes the target, boundary, unit,
+    timeframe, and success criterion before reasoning begins. Separate observations from
+    that frame, start from the anomaly it explains worst, generate materially different
+    boundaries, and record what would make each frame wrong. This is problem finding,
+    not another solution pass.
+18. **Counterexample search.** Universal claims are asymmetric: one admissible witness
+    kills them, while friendly examples do not prove them. Freeze the domain and
+    premises, search with execution, enumeration, tests, retrieval, or a solver before
+    model judgment, shrink any witness, and distinguish proof from bounded search that
+    merely found none.
+
 ## 4. Two delivery vehicles — and a test for choosing
 
 ### 4.1 Skills
@@ -248,21 +259,18 @@ survives motivated reasoning because its failure is visible in the artifact — 
 skill. If the act only works because something outside the model refuses to let the
 lawyering through, it needs machinery.
 
-There is a reason the line falls exactly there, and it is worth one paragraph because it
-turns a heuristic into a boundary. For any chain *truth → model output → post-processing*,
-where the post-processing is a function of the model's output alone, the data-processing
-inequality gives I(truth; processed) ≤ I(truth; output). **No re-reading, self-critique,
-reflection, or debate between copies of one model can contain more information about the
-truth than the output already did.** That is precisely why the acts that work as skills
-are the ones whose value does not depend on adding information — reformatting, pinning,
-decomposing, structuring — while the acts needing machinery are those whose value *is*
-the arrival of something external: a fresh-context judgment, a source, an executed
-result, a resolved outcome. One refinement makes the statement correct: the inequality
-concerns Shannon information, and the usable-information literature shows post-processing
-can increase what a computationally bounded decoder actually extracts. The precise
-version is therefore **structure can improve extraction; it cannot improve evidence** —
-which is also why chain-of-thought helps while unaided self-correction degrades (Huang et
-al. 2024).
+There is a reason the line falls there, but the information-theoretic claim needs a
+precise scope. For any chain *truth → one model output → post-processing*, where the
+post-processing is a function of that output alone, the data-processing inequality gives
+I(truth; processed) ≤ I(truth; output). A second call that sees the original problem is
+not literally a function of the first sample: additional draws can expose usable
+information the first draw did not and can reduce noise. They still introduce no
+**external evidence** about the world, and their errors remain correlated. The usable-
+information literature likewise shows that structure can improve what a computationally
+bounded decoder extracts. The operational rule is therefore **model-only structure and
+resampling can improve extraction and computation; they cannot improve evidence**.
+Sources, executed results, observations, and independently constrained computation break
+that limitation in different ways, which is why the recipes must say which one they add.
 
 Machinery comes in two grades, giving three tiers overall:
 
@@ -309,14 +317,16 @@ exact arithmetic meets continuous invented inputs, not everywhere a judgment ent
 |---|-----|-----------------|-------------------|-------------------------------|-----------------|------------------|
 | 3 | Reformat | `ct-reformat` | **Full** | — | — | not needed |
 | 2 | Definition pin | `ct-definition-pin` | **Full** | — | — | not needed |
+| 17 | Reframe / anomaly hunt | `ct-reframe` | **Strong** | alternative generated before commitment; frames outside the model's distribution | pre-registration boundary + affected-human review | optional for high stakes |
 | 1 | Question tree / Fermi | `ct-question-tree` + `fermi.py` | **Full** | synthesis-citation binding | workflow engine | not worth it |
 | 4 | Assumption audit | `ct-assumption-audit` | **Full** | — | — | not needed |
+| 18 | Counterexample search | `ct-counterexample` | **Strong**; **Formal** when a complete oracle covers the frozen domain | that the search ran; encoding faithful; certificate valid | execution/solver boundary | use existing host tools; no general solver here |
 | 11 | Premortem | `ct-premortem` | **Full** | tripwire follow-through | scheduler/hook watching signals | Tier 2, optional |
 | 5 | Steelman | `ct-steelman` | **Strong** | advocate blindness; symmetric effort; timestamped pre-registration | debate service, hidden channels, effort accounting | worth building |
 | 9 | Judgment panel | `ct-panel` + `aggregate.py` | **Strong** | every draw reported; that a `source` tag is true | sampling service with server-side draw log | argLLM's sampling adapter is this shape |
 | 6 | ACH | `ct-ach` + `ach_score.py` | **Strong** | per-cell fresh elicitation | ACH server — the natural sibling of argLLM | **best next server** |
 | 7 | Evidence ledger | `ct-evidence-ledger` + `ledger.py` | **Partial** | honest grading; immutability | citation-checker + append-only store | worth building |
-| 8 | Consistency log | `ct-consistency-log` + `commitlog.py` | **Partial** | complete capture (logging is voluntary); that recorded edges match real dependence; immutability | boundary auto-logger of stated positions | worth building |
+| 8 | Consistency log | `ct-consistency-log` + `commitlog.py` + `analyze_dependencies` | **Partial** | complete capture (logging is voluntary); that recorded edges match real dependence; immutability | boundary auto-logger of stated positions | withdrawal impact exists; capture remains voluntary |
 | 10 | Calibration | `ct-calibration` + `brier.py` | **Weak** (self-graded, now *measurably* so via `resolved_by`) | untamperable history; outcomes fed by non-predictor (CI, tracker, human) | prediction-ledger service | **second-best next server** |
 | 13 | Verdict gate | `ct-verdict-gate` + `hooks/verdict_gate_stop.py` | **Strong** (locked; the hook fails open) | that the gate was *filled*, not merely written | harness Stop hook + process audit | **exists** (`hooks/`) |
 | 15 | Entailment check | `ct-entailment` + `origins.py` | **Strong** | that retrieval happened and spans are real; fetched-source verification | citation-checker fetching each source | worth building |
@@ -383,17 +393,18 @@ a candidate for the next cut, not a candidate for defence.**
 | 7 | Evidence ledger | F6 — score-keeping is what couples confidence to accuracy (Tetlock 2005) | — *(hallucinated-citation literature is adjacent, not a replication)* |
 | 15 | Entailment check | F2/F8 — relevance is not entailment; independence of sources is the classic corroboration error | retrieval-augmented models cite sources that do not support the claim; repetition inflates apparent support |
 | 16 | Ensemble of perspectives | F7 — mechanical combination beats holistic judgment, and judgment is noisy (Meehl 1954; Kahneman, Sibony & Sunstein 2021); bagging is the statistical form (Breiman 1996, 2001) | self-consistency samples and aggregates mechanically (Wang et al. 2023); debate across independent contexts improves factuality (Du et al. 2023) |
+| 17 | Reframe / anomaly hunt | F2 — representation changes reasoning ability; F8 — structured methods beat awareness alone | prompt-format changes swing performance without changing information (Sclar et al. 2024) |
+| 18 | Counterexample search | F8 — consider-the-opposite works when made procedural; a valid witness mechanically defeats a universal | intrinsic self-correction degrades without external feedback (Huang et al. 2024); the specific generate–execute–shrink recipe is unmeasured here |
 | 8 | Consistency log | F3 — small working memory; drift over long horizons | "lost in the middle": long-context attention is effectively shallow (Liu et al. 2024) |
 | 10 | Calibration | F6 — weather forecasters are calibrated because feedback is fast; superforecasters keep score (Tetlock & Gardner 2015) | — *(LLM calibration is well studied; the *ledger* intervention is not)* |
 | 13 | Verdict gate | F8 — checklists work; awareness does not (Gawande 2009) | F1's post-hoc checking: self-critique without external information does not correct (Huang et al. 2024) |
 | 12 | Sensitivity probe | F7 — it is arithmetic, not judgment | — *(mechanical; no replication needed)* |
 | 14 | Argument map | F8 — argument mapping yields ~0.7–0.8 SD gains per semester (van Gelder 2005; Twardy 2004) | QBAF-structured verification improves contestable claim checking (Freedman et al. 2024) |
 
-Read the empty cells honestly. Five acts rest on human evidence with no LLM-side
-replication of the specific failure, and two of those (definition pin, premortem) have no
-direct LLM study at all. They ship because the human evidence is strong and the cost is
-low — but they are the first candidates for removal if measurement does not support them,
-and saying so here is the point of the column.
+Read the empty and qualified cells honestly. Several acts rest on human evidence with no
+LLM-side replication of the specific intervention. They ship because the human evidence
+is strong and the cost is low — but they are the first candidates for removal if
+measurement does not support them, and saying so here is the point of the column.
 
 ## 6. Case study: argLLM as the machinery tier
 
@@ -432,13 +443,29 @@ The stable composition is not skills *or* machinery but skills *driving* machine
 ```
   user intent
       │
-  Tier 1  skill (method): pick the act, phrase the prompts, route artifacts
+  Tier 1  controller: silently choose the minimum useful act — or NO_SCAFFOLD
+      │
+  Tier 1  skill (method): phrase prompts, invoke tools, route artifacts
       │
   Tier 2  harness (locks): gates that block transitions until artifacts exist
       │
   Tier 3  service (guarantees): validated structure, clean elicitation,
           arithmetic verdicts, append-only history        ←── the receipts live here
 ```
+
+The controller is part of this package, not a second system. The user states the problem,
+not the technique. `critical-thinking` triages from visible failure signals, starts with
+one act, and escalates only when that act exposes a split, unsupported load-bearing claim,
+fragile input, missing observable, or failed check. It asks the user only for a value
+judgment, a meaning whose ambiguity changes the answer, evidence only they can supply, or
+authority for an irreversible action. `NO_SCAFFOLD` is a successful route: most ordinary
+queries should pay no critical-thinking ceremony at all.
+
+The controller also applies an epistemic-leverage stamp. A stage may add external
+evidence, independently constrained computation, or model-only structure. These are
+reported separately. A fresh same-model perspective is useful contestation and not a new
+source; a solver certifies the encoded statement and not its faithfulness; dependency
+impact is exact about recorded edges and not about edges the author failed to record.
 
 Rationality, on the ecological view (Gigerenzer), is a fit between a mind and its
 environment; you improve reasoning by designing the environment, not by exhorting the
@@ -458,6 +485,10 @@ Two honest caveats about the skill tier's own foundations:
   (aviation and medicine both relearned this). The verdict gate's SKIPPED-with-reason
   convention is designed to keep skipping *expensive in candor* rather than forbidden —
   forbidding produces pencil-whipping, candor produces signal.
+- **Routing risk.** Autonomy removes user micromanagement by moving method selection into
+  the model. A confident misroute can now be invisible. Progressive escalation,
+  `NO_SCAFFOLD`, and receipts for acts that actually ran limit the cost; only matched
+  evaluation can show whether the controller selects well.
 
 ## 8. Evaluation plan
 
@@ -478,6 +509,14 @@ The set makes falsifiable claims; here is how we would test them (not yet run):
 - **Cost.** Tokens and wall-clock per act, because the honest comparison is
   quality-per-dollar, and because some acts (reformat, definition pin) should pay for
   themselves while others (full ACH) are reserved for stakes.
+- **Autonomous routing.** Compare user-selected acts, the autonomous controller, and
+  `NO_SCAFFOLD` at matched compute. Report both directions of harm: cases the controller
+  fixes and cases direct work got right but the selected scaffold breaks. A router that
+  never chooses no scaffold has failed before its downstream scores are read.
+- **Problem finding and falsification.** Seed tasks whose asked question targets the
+  wrong boundary and universal claims with small executable counterexamples. Measure
+  useful frame changes, invalid frame changes, witness validity, shrink quality, and the
+  rate at which bounded search is falsely reported as proof.
 - **Process-vs-artifact audit.** The measurement for guarantee (d), and the one built
   first because its result decides what else is worth building. `bench/process_audit/`
   holds the protocol. Take N tasks suited to hypothesis-matrix analysis and produce two
@@ -494,19 +533,21 @@ The set makes falsifiable claims; here is how we would test them (not yet run):
   priority. This lives in `bench/` rather than `tests/` on purpose: tests pin behaviour
   deterministically, and this measures a live model and will be noisy.
 - **Instances with planted traps.** `bench/generate_instance.py` procedurally generates a
-  diagnosis-and-intervention problem *from* hidden ground truth, so scoring is exact and
-  contamination impossible. Each trap maps to one act and each wrong discipline produces
-  a *different* wrong answer, so a failure is attributable rather than merely wrong:
+  diagnosis-and-intervention packet with an authoritative synthetic prediction model. A
+  reference solver must reconstruct every keyed field from only the agent-visible packet
+  and the separately queryable registry; the generator refuses a draw that it cannot.
+  Each trap maps to one act and each wrong discipline produces a *different* wrong answer,
+  so a failure is attributable rather than merely wrong:
   counting restatements of one origin as four observations lands on one hypothesis;
   missing a mid-episode retraction lands on another; ignoring the base rates that exist
-  only in a queryable registry lands on a third. The budget makes the confirmatory path
-  infeasible by construction, one sub-question no affordable probe can settle (the
-  correct answer is abstention), and one remediation schedule is infeasible in a stated
-  fraction of instances (the correct answer is the infeasibility proof and the minimal
-  conflicting subset). The honest limit: handing over likelihood ratios and constraints
-  already formalised means the instrument tests **procedural discipline only**. Whether a
-  model can produce a faithful formalisation in the first place is the harder question,
-  and this does not reach it.
+  only in a queryable registry lands on a third. A shared-budget probe plan must contain
+  an affordable discriminator for the matrix-tied pair, and a response schedule is
+  infeasible in a stated fraction of instances (the scorer accepts any inclusion-minimal
+  conflict, not one generator-chosen witness). The honest limit: handing over predictions
+  and constraints already formalised means the instrument tests **procedural discipline
+  only**. Whether a model can produce a faithful formalisation in the first place is the
+  harder question, and this does not reach it. Solver packets omit `truth.json`; judge
+  bundles are generated separately after the answer commits.
 
 ## 9. Limitations and open questions
 
@@ -577,7 +618,8 @@ The skill tier first shipped inside the argLLM repository; it now lives here, in
 **critical-thinking-mcp**, together with a second deliverable the classification table
 called for: a lean MCP server of purely mathematical aggregators (`src/ctmcp/`) — QBAF
 evaluation under DF-QuAD, ACH inconsistency scoring with flip-cell sensitivity, panel
-statistics, Brier calibration bins, and Fermi interval arithmetic.
+statistics, Brier calibration bins, Fermi interval arithmetic, and truth-maintenance
+withdrawal impact over recorded dependency graphs.
 
 This server is a deliberately *partial* Tier 3. Of §5's four machinery guarantees it
 provides only the arithmetic half of (b) — verdicts computed by rule, with the rule
@@ -628,6 +670,38 @@ And the lock the set had been describing for two revisions now exists: `hooks/`
 answered — which is guarantee (d) restated, and exactly what `bench/process_audit/` is
 built to measure.
 
+## Addendum (v1.3) — autonomous selection, problem finding, and recorded impact
+
+The toolbox now selects itself. The `critical-thinking` skill is an autonomous outer
+controller: it routes by failure signal, begins with the minimum useful act, treats
+`NO_SCAFFOLD` as success, and escalates only on a concrete finding. The user supplies the
+problem and retains authority over values and irreversible action; they no longer have to
+know that ACH, entailment checking, or a premortem exists. This removes micromanagement,
+not the lawyer problem — routing remains a model judgment and is now an explicit
+evaluation target.
+
+Two acts widen the set from error checking toward problem finding and independently
+constrained falsification. `ct-reframe` separates observations from the question's hidden
+target and boundary, starts from the anomaly the original frame explains worst, and
+records what would falsify each alternative frame. `ct-counterexample` freezes a
+universal claim's domain and premises, prefers enumeration, execution, tests, retrieval,
+or a solver to model critique, shrinks any witness, and makes
+`SURVIVED_BOUNDED_SEARCH` different from proof in the artifact itself.
+
+The commitment graph gained a narrow endogenous computation without claiming the free
+soundness such computations are often given. `commitlog.py impact` and the pure
+`analyze_dependencies` MCP tool withdraw each ACTIVE entry in simulation and count which
+recorded live claims become `OUT`; targets name which recorded premises carry a final
+conclusion. Script and core parity tests pin the result. The rank is exact about the
+append-only record and is a verification-budget heuristic only: the model still authored
+the edges, so a missing dependency remains invisible.
+
+Finally, the shared convention now distinguishes **external evidence**, **independently
+constrained computation**, and **model-only structure**. Additional model calls can
+improve extraction and reduce noise; they do not become external evidence by being
+numerous or well formatted. Every consequential result says which kind of leverage it
+actually received.
+
 ---
 
 ## References
@@ -637,6 +711,7 @@ built to measure.
 - Clark, A. & Chalmers, D. (1998). The extended mind. *Analysis*.
 - Cowan, N. (2001). The magical number 4 in short-term memory. *Behavioral and Brain
   Sciences*.
+- Doyle, J. (1979). A truth maintenance system. *Artificial Intelligence*.
 - Gawande, A. (2009). *The Checklist Manifesto*.
 - Gigerenzer, G. & Hoffrage, U. (1995). How to improve Bayesian reasoning without
   instruction: frequency formats. *Psychological Review*.
@@ -706,13 +781,15 @@ built to measure.
 
 ## Appendix A — the shipped skill set
 
-Sixteen skills under `skills/` (symlinked as `.claude/skills` in this repository, so
+Eighteen skills under `skills/` (symlinked as `.claude/skills` in this repository, so
 they are live here; copy skill directories into another project's `.claude/skills/` or
 into `~/.claude/skills/` for global use). Scripts are Python-stdlib-only.
 
 | Skill | Files | Role |
 |---|---|---|
-| `critical-thinking` | SKILL.md, references/conventions.md, references/subagent-templates.md | router, shared rules, fresh-mind prompt templates T1–T8 |
+| `critical-thinking` | SKILL.md, references/conventions.md, references/subagent-templates.md | autonomous controller, NO_SCAFFOLD, progressive escalation, shared rules, templates T1–T12 |
+| `ct-reframe` | SKILL.md | alternative frames, anomaly-first problem finding, wrong-frame tests |
+| `ct-counterexample` | SKILL.md | oracle-first witness search, shrinking, proof-vs-bounded-search distinction |
 | `ct-question-tree` | SKILL.md, scripts/fermi.py | decomposition + Fermi interval arithmetic |
 | `ct-definition-pin` | SKILL.md | operational definitions, equivocation naming |
 | `ct-reformat` | SKILL.md | representation translation catalog |
@@ -723,7 +800,7 @@ into `~/.claude/skills/` for global use). Scripts are Python-stdlib-only.
 | `ct-evidence-ledger` | SKILL.md, scripts/ledger.py | claim–source coupling, naked-claim report |
 | `ct-ensemble` | SKILL.md, scripts/bag.py, references/example.md | bagged perspectives, mechanical vote, permutation importance |
 | `ct-entailment` | SKILL.md, scripts/origins.py | per-claim entailment verdicts, origin clustering, distinct-origin counts |
-| `ct-consistency-log` | SKILL.md, scripts/commitlog.py | commitment capture, pair-sweep bookkeeping |
+| `ct-consistency-log` | SKILL.md, scripts/commitlog.py | commitment capture, contradiction sweep, retraction and withdrawal-impact bookkeeping |
 | `ct-panel` | SKILL.md, scripts/aggregate.py | independent draws, mechanical aggregation |
 | `ct-calibration` | SKILL.md, scripts/brier.py | prediction ledger, Brier bins (self-graded, labeled) |
 | `ct-verdict-gate` | SKILL.md | pre-verdict checklist with written skips |
