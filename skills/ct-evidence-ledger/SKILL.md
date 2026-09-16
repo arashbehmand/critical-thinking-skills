@@ -35,8 +35,10 @@ you hate from the primary dataset is A. The uncomfortable grade is the point.
    presented as fact. Opinions and clearly-flagged speculation stay out of the ledger.
 3. **Log each claim:**
 
+   `<skill-dir>` is the folder this skill was loaded from.
+
    ```sh
-   python3 skills/ct-evidence-ledger/scripts/ledger.py add \
+   python3 <skill-dir>/scripts/ledger.py add \
      --file .ct/evidence--<slug>.jsonl \
      --claim "p99 fell 40% after the index change" \
      --source "grafana dashboard, deploy-4812 annotation" --grade A
@@ -47,7 +49,7 @@ you hate from the primary dataset is A. The uncomfortable grade is the point.
 4. **Run the report:**
 
    ```sh
-   python3 skills/ct-evidence-ledger/scripts/ledger.py report \
+   python3 <skill-dir>/scripts/ledger.py report \
      --file .ct/evidence--<slug>.jsonl
    ```
 

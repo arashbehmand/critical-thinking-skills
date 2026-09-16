@@ -29,8 +29,10 @@ needs discrete evidence items to vary — a single judgment with nothing to slic
    `instance.json`, or a bare list of `{id, text, source, credibility}`.
 2. **Draw the subsets with the script — never by hand:**
 
+   `<skill-dir>` is the folder this skill was loaded from.
+
    ```sh
-   python3 skills/ct-ensemble/scripts/bag.py draw \
+   python3 <skill-dir>/scripts/bag.py draw \
      --evidence .ct/ach--<slug>/matrix.json --n 7 --rate 0.65 --seed 1
    ```
 
@@ -38,7 +40,7 @@ needs discrete evidence items to vary — a single judgment with nothing to slic
    at least one subset and out of at least one — which is what makes step 5 possible.
    Save the machine-readable copy too (`--json > .ct/ensemble--<slug>/draws.json`).
 3. **Spawn one fresh agent per subset** (template T10,
-   `critical-thinking/references/subagent-templates.md`). Each gets the question, the
+   the `critical-thinking` skill's `references/subagent-templates.md`). Each gets the question, the
    full hypothesis list, and **its subset only**. No lean, no other agents' answers, no
    hint that other subsets exist.
 4. **Collect the verdicts** into `.ct/ensemble--<slug>/verdicts.json` as
@@ -46,7 +48,7 @@ needs discrete evidence items to vary — a single judgment with nothing to slic
 5. **Aggregate mechanically:**
 
    ```sh
-   python3 skills/ct-ensemble/scripts/bag.py aggregate \
+   python3 <skill-dir>/scripts/bag.py aggregate \
      --draws .ct/ensemble--<slug>/draws.json \
      --verdicts .ct/ensemble--<slug>/verdicts.json
    ```

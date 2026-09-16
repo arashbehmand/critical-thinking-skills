@@ -1,5 +1,7 @@
 """The thin shell: tools wired to core, pure annotations set, validation → ToolError."""
 
+from pathlib import Path
+
 import pytest
 from fastmcp import Client
 from fastmcp.exceptions import ToolError
@@ -17,24 +19,7 @@ EXPECTED_TOOLS = {
 }
 
 EXPECTED_SKILLS = {
-    "critical-thinking",
-    "ct-ach",
-    "ct-argument-map",
-    "ct-assumption-audit",
-    "ct-calibration",
-    "ct-consistency-log",
-    "ct-counterexample",
-    "ct-definition-pin",
-    "ct-ensemble",
-    "ct-entailment",
-    "ct-evidence-ledger",
-    "ct-panel",
-    "ct-premortem",
-    "ct-question-tree",
-    "ct-reformat",
-    "ct-reframe",
-    "ct-steelman",
-    "ct-verdict-gate",
+    p.parent.name for p in (Path(__file__).resolve().parent.parent / "skills").glob("*/SKILL.md")
 }
 
 
@@ -58,6 +43,12 @@ async def test_all_skills_are_advertised_as_resources() -> None:
             for file_name in ("SKILL.md", "_manifest")
         }
         assert expected_uris <= uris
+        advertised = {
+            uri.split("/")[2]
+            for uri in uris
+            if uri.startswith("skill://") and uri.endswith("/SKILL.md")
+        }
+        assert advertised == EXPECTED_SKILLS
 
         skill = await client.read_resource("skill://ct-ach/SKILL.md")
         assert "# ACH — analysis of competing hypotheses" in skill[0].text

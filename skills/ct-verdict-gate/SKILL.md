@@ -67,10 +67,12 @@ A checklist in context is still advice: nothing *prevents* delivering a verdict 
 the gate file, and the model most likely to skip it is the one most confident — exactly
 the case the gate targets. The skill ships the checklist; only a hook can ship the lock.
 
-**The lock now exists:** `hooks/verdict_gate_stop.py` is a Claude Code `Stop` hook that
+**An optional lock exists:** a Claude Code `Stop` hook (`verdict_gate_stop.py`) that
 refuses to end a turn when the reply carries a verdict marker and no `.ct/gate--*.md` was
-written that session. Installation notes in `hooks/README.md`. It blocks at most once per
-turn and fails open, so it is a lock on the careless path, not on a determined one.
+written that session. It is not part of this skill folder: it ships in the
+critical-thinking-skills repository, with its own install notes, and nothing here depends on
+it. It blocks at most once per turn and fails open, so it is a lock on the careless path, not
+on a determined one.
 
 And it checks that the artifact **exists**, not that the procedure **ran** — it cannot
 tell a real gate from seven lines of `SKIPPED: obviously fine`. That gap is the fourth

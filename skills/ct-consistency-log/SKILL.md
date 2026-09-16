@@ -25,8 +25,10 @@ each one rests on.
 1. **Log at decision time, with what it rests on.** Whenever you fix a decision, adopt a
    factual position, or make a promise the rest of the work relies on:
 
+   `<skill-dir>` is the folder this skill was loaded from; with the `critical-thinking` server connected, its `analyze_dependencies` tool computes the same impact report.
+
    ```sh
-   python3 skills/ct-consistency-log/scripts/commitlog.py add \
+   python3 <skill-dir>/scripts/commitlog.py add \
      --file .ct/commitments--<slug>.jsonl \
      --statement "dead-letter queue drains hourly" --tags retries,queue \
      --depends-on c-1,c-4
@@ -43,19 +45,19 @@ each one rests on.
    final deliverable:
 
    ```sh
-   python3 skills/ct-consistency-log/scripts/commitlog.py pairs \
+   python3 <skill-dir>/scripts/commitlog.py pairs \
      --file .ct/commitments--<slug>.jsonl
    ```
 
    emits candidate pairs of live same-tag entries. Hand them to a fresh contradiction
-   reviewer (template T8, `critical-thinking/references/subagent-templates.md`) — it
+   reviewer (template T8, the `critical-thinking` skill's `references/subagent-templates.md`) — it
    judges the written pairs with no task context, which is exactly what makes it cheap
    and unbiased. You wrote both lines; you *will* harmonize them without noticing. It
    won't.
 4. **Walk the dependencies before delivering:**
 
    ```sh
-   python3 skills/ct-consistency-log/scripts/commitlog.py check \
+   python3 <skill-dir>/scripts/commitlog.py check \
      --file .ct/commitments--<slug>.jsonl
    ```
 
@@ -65,7 +67,7 @@ each one rests on.
 5. **Rank recorded withdrawal impact** when the log informs a consequential conclusion:
 
    ```sh
-   python3 skills/ct-consistency-log/scripts/commitlog.py impact \
+   python3 <skill-dir>/scripts/commitlog.py impact \
      --file .ct/commitments--<slug>.jsonl --targets c-18
    ```
 

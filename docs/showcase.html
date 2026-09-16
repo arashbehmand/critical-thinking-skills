@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>critical-thinking-mcp</title>
+<title>critical-thinking-skills</title>
 <style>
 :root {
   --ground: #f2f4f1;
@@ -224,14 +224,14 @@ footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--rule);
     <span class="eyebrow">Toolbox for AI agents · v1.4 branch</span>
     <button class="theme-toggle" id="theme-toggle" type="button">Theme: system</button>
   </div>
-  <h1>critical-thinking-mcp</h1>
+  <h1>critical-thinking-skills</h1>
   <p class="lede">A set of thinking procedures an agent follows, a small math server that does the arithmetic those procedures need, and two harness hooks. It gives the agent the habits a careful engineer or analyst uses: split the problem, test the explanation, compute instead of guess, and check the work before trusting it.</p>
   <div class="facts">
     <span><b>20</b> skills</span>
     <span><b>7</b> math tools</span>
     <span><b>2</b> hooks</span>
     <span><b>0</b> model calls inside the package</span>
-    <span>Works in Claude Code; the skills also work without the server</span>
+    <span>Installs with <code>npx skills</code> into most agents</span>
   </div>
 </header>
 
@@ -399,36 +399,31 @@ footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--rule);
 <section aria-labelledby="install">
   <div class="section-head">
     <span class="eyebrow">Install</span>
-    <h2 id="install">Three steps, each optional</h2>
+    <h2 id="install">One command for the skills, one plugin for the rest</h2>
+    <p>The skills install into any agent that reads the open Agent Skills format. Claude Code can also take the full plugin: skills, math server and nudge hook together.</p>
   </div>
   <div class="two-col">
     <div class="group">
-      <h3>1. The skills</h3>
-      <p class="note">Copy the skill folders into a project, or into your home folder for every project. They work without the server; their scripts use the Python standard library only.</p>
-<pre>cp -r skills/* your-project/.claude/skills/
-# or, for every project:
-cp -r skills/* ~/.claude/skills/</pre>
-      <h3>2. The math server</h3>
-<pre>claude mcp add critical-thinking -- \
-  uv run --directory /path/to/critical-thinking-mcp ctmcp</pre>
+      <h3>Skills, any agent</h3>
+<pre>npx skills add arashbehmand/critical-thinking-skills --list
+npx skills add arashbehmand/critical-thinking-skills -g -y
+npx skills update -g</pre>
+      <p class="note">Lands in <code>~/.agents/skills</code> (Codex, opencode, Cursor, Copilot, Gemini CLI) and links into <code>~/.claude/skills</code>. Keep <code>critical-thinking</code> if you pick skills one by one.</p>
+      <h3>Math server, other agents</h3>
+<pre>codex mcp add critical-thinking -- \
+  uv run --directory /path/to/critical-thinking-skills ctmcp</pre>
     </div>
     <div class="group">
-      <h3>3. The hooks</h3>
-      <p class="note">Add to <code>.claude/settings.json</code>. Use full paths.</p>
-<pre>{
-  "hooks": {
-    "UserPromptSubmit": [{"hooks": [{"type": "command",
-      "command": "python3 /path/to/hooks/controller_nudge.py"}]}],
-    "Stop": [{"hooks": [{"type": "command",
-      "command": "python3 /path/to/hooks/verdict_gate_stop.py"}]}]
-  }
-}</pre>
+      <h3>Claude Code, full install</h3>
+<pre>claude plugin marketplace add arashbehmand/critical-thinking-skills
+claude plugin install critical-thinking@critical-thinking-skills --scope user</pre>
+      <p class="note">Adds the math server and the nudge hook. Use it instead of the <code>npx skills</code> install for Claude Code, not as well. Keep receipts out of git with <code>echo ".ct/" &gt;&gt; ~/.gitignore_global</code>.</p>
     </div>
   </div>
 </section>
 
 <footer>
-  critical-thinking-mcp · 20 skills, 7 tools, 2 hooks · results from the v1.4 plan, <code>docs/v1.4-plan.md</code> · this page works offline and loads nothing from the network
+  critical-thinking-skills · 20 skills, 7 tools, 2 hooks · results from the v1.4 plan, <code>docs/v1.4-plan.md</code> · this page works offline and loads nothing from the network
 </footer>
 
 </div>

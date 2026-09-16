@@ -21,7 +21,7 @@ premises one at a time instead of telling the failure story.
    horizon. The snapshot is what the subagents get — the plan as it *is*, with none of
    your enthusiasm attached.
 2. **Spawn 2–3 fresh post-mortem authors** (template T5,
-   `critical-thinking/references/subagent-templates.md`): "It is <horizon date>. The plan
+   the `critical-thinking` skill's `references/subagent-templates.md`): "It is <horizon date>. The plan
    below was carried out and it failed badly. Write the post-mortem: top causes, most
    likely first, each naming the step that broke and the earliest observable signal."
    Run them independently — no author sees another's list.

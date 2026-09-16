@@ -1,0 +1,25 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "critical-thinking",
+  "version": "0.2.0",
+  "description": "Twenty thinking procedures for agents \u2014 pick the smallest useful act, compute instead of guess, check the work \u2014 plus a pure-math MCP server and a hook that hands the controller over on consequential requests.",
+  "author": {
+    "name": "Arash Behmand",
+    "email": "arashbehmand@gmail.com"
+  },
+  "skills": [
+    "./skills/"
+  ],
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": {
+    "critical-thinking": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "${CLAUDE_PLUGIN_ROOT}",
+        "ctmcp"
+      ]
+    }
+  }
+}

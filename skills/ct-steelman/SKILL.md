@@ -18,7 +18,7 @@ that the conclusion itself is wrong.
 
 ## Procedure
 
-All templates are in `critical-thinking/references/subagent-templates.md`. Artifact:
+All templates are in the `critical-thinking` skill's `references/subagent-templates.md`. Artifact:
 `.ct/steelman--<slug>.md`, written in this order — the order is the method:
 
 1. **Pre-register.** Write your current lean and confidence (a number) into the artifact

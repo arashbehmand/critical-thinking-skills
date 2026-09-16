@@ -1,9 +1,10 @@
 # Fresh-mind prompt templates
 
-Copy these verbatim, fill the `<placeholders>`, and pass to the Agent tool
-(`general-purpose`). Add raw materials (documents, evidence) after the template text.
-Never add your draft, your lean, prior scores, or any cue about which answer is wanted —
-see conventions.md §2.
+Copy these verbatim, fill the `<placeholders>`, and pass to your harness's subagent tool
+(Claude Code: `Agent`, type `general-purpose`; opencode: `task`). Add raw materials
+(documents, evidence) after the template text. Never add your draft, your lean, prior
+scores, or any cue about which answer is wanted — see conventions.md §2, which also says
+what to do and how to label the receipt when no subagent tool exists.
 
 ## T1 — Advocate (ct-steelman)
 

@@ -18,7 +18,7 @@ search or simulation can compute the exact answer, formalize instead.
 
 1. **Write the root question verbatim** at the top of `.ct/tree--<slug>.md`.
 2. **Decompose** into 2–7 children. Do it yourself, or use template T7
-   (`critical-thinking/references/subagent-templates.md`) for a second opinion. Test each
+   (the `critical-thinking` skill's `references/subagent-templates.md`) for a second opinion. Test each
    set: every child answerable on its own; answering all children settles the parent
    *mechanically* — no overlaps, no gaps. If T7 reports a "Residue", add a child for it.
 3. **Recurse only where a child is still too big.** Three levels is the ceiling — deeper
@@ -62,8 +62,10 @@ For "how many / how much" with no direct source:
    to you, `invented` when you made it up.
 3. Combine with the bundled script — never in your head:
 
+   `<skill-dir>` is the folder this skill was loaded from; with the `critical-thinking` server connected, its `combine_fermi` tool computes the same result.
+
    ```sh
-   python3 skills/ct-question-tree/scripts/fermi.py factors.json
+   python3 <skill-dir>/scripts/fermi.py factors.json
    ```
 
    Input: `{"factors": [{"name": "US households", "low": 1.2e8, "high": 1.4e8,

@@ -59,7 +59,7 @@ side's best case in prose and computes nothing.
 ## Degraded mode (argLLM unavailable) — two rungs, label which you used
 
 1. **Preferred — subagent scores + mechanical aggregation.** If the
-   critical-thinking-mcp math server is registered: draft the tree yourself (claim,
+   `critical-thinking` math server is registered: draft the tree yourself (claim,
    pro/con arguments, parents); elicit each argument's base score from a **fresh
    subagent** — one per argument, template T4 with the question "how likely is this
    statement to be true? end with `ANSWER: <0–1>`", never showing your lean or the

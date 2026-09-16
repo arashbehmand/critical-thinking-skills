@@ -17,7 +17,7 @@ imagines the plan failing. An audit keeps the claim and inspects what it stands 
 
 1. **State the target verbatim** at the top of `.ct/assumptions--<slug>.md`.
 2. **Elicit from a fresh mind.** Use template T6
-   (`critical-thinking/references/subagent-templates.md`): a subagent that gets the claim
+   (the `critical-thinking` skill's `references/subagent-templates.md`): a subagent that gets the claim
    only — not your lean — lists what must be true for it to hold. The author of an
    argument is the worst-placed person to see its floor; that is why this step is not
    optional.

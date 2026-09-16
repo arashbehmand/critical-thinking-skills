@@ -12,8 +12,10 @@ So this hook does one small thing: on a prompt whose *wording* matches a determi
 trigger, it appends one line asking the model to run the `critical-thinking` controller and
 reminding it that `NO_SCAFFOLD` is a valid outcome. It never picks an act, never mentions
 the catalog to the user, and fires at most once per session so a long conversation is not
-nagged. Every decision, fired or skipped, is appended to `.ct/nudge-log.jsonl`, so the
-engage rate is measurable from outside the model rather than from its own account.
+nagged. Every prompt that matches a trigger is logged to `.ct/nudge-log.jsonl`, fired or
+skipped, so the engage rate is measurable from outside the model rather than from its own
+account. A prompt that matches nothing leaves no trace: installed system-wide, the hook
+must not create a `.ct/` folder in every project it passes through.
 
 Deliberately fails OPEN: any bad payload, unreadable state file or unexpected error exits
 0 with no output, and the turn proceeds untouched.
@@ -81,7 +83,9 @@ def main() -> int:
     root = Path(str(data.get("cwd") or os.getcwd()))
 
     matched = matched_triggers(prompt)
-    fired = bool(matched) and not already_fired(root, session)
+    if not matched:
+        return 0
+    fired = not already_fired(root, session)
     record(
         root,
         {

@@ -1,4 +1,4 @@
-# critical-thinking-mcp — instructions for coding agents
+# critical-thinking-skills — instructions for coding agents
 
 Critical-thinking practices for LLM agents, delivered as **recipes + math**. Recipes
 (the skills in `skills/`) are procedures the host model follows; whenever a recipe needs
@@ -65,7 +65,7 @@ uv run mypy                  # strict
 
 Run the server: `ctmcp` / `python -m ctmcp` / `fastmcp run src/ctmcp/server/app.py:mcp`.
 Register with Claude Code:
-`claude mcp add critical-thinking -- uv run --directory /path/to/critical-thinking-mcp ctmcp`.
+`claude mcp add critical-thinking -- uv run --directory /path/to/critical-thinking-skills ctmcp`.
 
 Every change must end green on all four commands above. Do not commit unless asked.
 

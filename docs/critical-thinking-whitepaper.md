@@ -2,7 +2,7 @@
 
 **A critical-thinking skill set, and the line where skills end and machinery begins**
 
-*White paper v1.3 · critical-thinking-mcp project · August 2026*
+*White paper v1.3 · critical-thinking-skills project · August 2026*
 
 ---
 
@@ -633,7 +633,7 @@ already visible from here.
 ## Addendum (v1.1) — the project split and the middle rung
 
 The skill tier first shipped inside the argLLM repository; it now lives here, in
-**critical-thinking-mcp**, together with a second deliverable the classification table
+**critical-thinking-skills** (first published as critical-thinking-mcp), together with a second deliverable the classification table
 called for: a lean MCP server of purely mathematical aggregators (`src/ctmcp/`) — QBAF
 evaluation under DF-QuAD, ACH inconsistency scoring with flip-cell sensitivity, panel
 statistics, Brier calibration bins, Fermi interval arithmetic, and truth-maintenance

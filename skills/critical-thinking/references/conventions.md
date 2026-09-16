@@ -17,7 +17,9 @@ failure mode of unaided reasoning — the failure mode is named next to each rul
 ## 2. The fresh-mind rule (who supplies the judgments)
 
 When a skill calls for an independent judgment — an advocate, a rater, a panelist — spawn
-a subagent (Agent tool, `general-purpose`) whose prompt contains **only**:
+a subagent with your harness's subagent tool (Claude Code: `Agent`, type `general-purpose`;
+opencode: `task`; elsewhere, whatever starts a separate agent with its own context) whose
+prompt contains **only**:
 
 - the question or item, verbatim;
 - the raw materials needed to answer (documents, evidence text);
@@ -27,6 +29,11 @@ a subagent (Agent tool, `general-purpose`) whose prompt contains **only**:
 assigned; the phrase "confirm that"; any hint of which side is "ours"; other panelists'
 answers. The test: *if the subagent could infer your preferred answer from the prompt, it
 is not a fresh mind.* Templates with the exact wording: `subagent-templates.md`.
+
+**No subagent tool?** Some harnesses and most chat apps have none. Then either run the
+judgment in a new session that receives only the fresh-mind prompt, or run it in the current
+context and write `fresh-mind: degraded (same context)` in the receipt and in the final
+answer. A same-context judgment is never presented as a fresh one.
 
 - *Failure mode closed:* the lawyer problem — a mind that has committed to an answer
   produces evidence for it, not about it.
@@ -40,23 +47,17 @@ different model family or a human.
 
 Combining numbers — scores, counts, ranges, probabilities — is done by the bundled
 scripts (`fermi.py`, `ach_score.py`, `aggregate.py`, `brier.py`, `origins.py`, `bag.py`,
-`commitlog.py`), never in prose. Each script prints the rule it applied so a reader can
+`commitlog.py`), never in prose. Each script lives in its own skill's `scripts/` folder; run it as
+`python3 <skill-dir>/scripts/<script>.py`, where `<skill-dir>` is the folder that skill was
+loaded from. When the `critical-thinking` MCP server is connected, its tools compute the same
+results (`evaluate_qbaf`, `score_ach`, `combine_fermi`, `aggregate_numeric`, `aggregate_vote`,
+`score_calibration`, `analyze_dependencies`); parity tests keep scripts and tools identical. Each script prints the rule it applied so a reader can
 check it by hand. Counting sources is arithmetic too: `origins.py` reports **distinct
 origins**, and a citation count that never drops below the document count means the
 collapse never ran.
 
 - *Failure mode closed:* holistic in-head aggregation, which is where noise and
   motivated rounding live.
-
-Script paths in the recipes are repo-relative (`skills/<skill>/scripts/…`). When a
-skill is installed into another project, its scripts travel with the skill directory —
-adjust the base path to wherever the skill landed (e.g.
-`.claude/skills/<skill>/scripts/…`). Where the critical-thinking-mcp math server is
-registered, the same rules are also available as pure MCP tools (`evaluate_qbaf`,
-`score_ach`, `aggregate_numeric`, `aggregate_vote`, `score_calibration`,
-`combine_fermi`, `analyze_dependencies`) — where a script and server expose the same
-computation, pinned parity tests require identical results.
-
 ## 4. Append-only ledgers
 
 Ledger files (`evidence--*.jsonl`, `commitments--*.jsonl`, `entailment--*.jsonl`,

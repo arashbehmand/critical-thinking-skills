@@ -33,14 +33,16 @@ than "I don't know".
 2. **Retrieve per load-bearing claim**, not per topic. A topic search returns what is
    about the subject; a claim search returns what could settle it.
 3. **Ask a fresh context the narrow question** — one call per claim–source pair, template
-   T9 in `critical-thinking/references/subagent-templates.md`. Does this text *entail*
+   T9 in the `critical-thinking` skill's `references/subagent-templates.md`. Does this text *entail*
    the claim, *contradict* it, or is it *insufficient*? Record the supporting span
    verbatim. Give the checker the claim and the source text only: a checker that can see
    your draft is checking your draft.
 4. **Cluster the sources by origin before counting anything:**
 
+   `<skill-dir>` is the folder this skill was loaded from.
+
    ```sh
-   python3 skills/ct-entailment/scripts/origins.py .ct/entailment--<slug>.jsonl
+   python3 <skill-dir>/scripts/origins.py .ct/entailment--<slug>.jsonl
    ```
 
    Syndication, quoting chains, a shared press release, dataset, or preprint collapse to

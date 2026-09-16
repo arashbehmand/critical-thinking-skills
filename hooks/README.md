@@ -37,7 +37,7 @@ Add to `.claude/settings.json` (project) or `~/.claude/settings.json` (global):
         "hooks": [
           {
             "type": "command",
-            "command": "python3 /absolute/path/to/critical-thinking-mcp/hooks/verdict_gate_stop.py",
+            "command": "python3 /absolute/path/to/critical-thinking-skills/hooks/verdict_gate_stop.py",
             "timeout": 10
           }
         ]
@@ -98,8 +98,9 @@ instruction has to arrive from outside the model.
 This hook runs on `UserPromptSubmit`. When the prompt's wording matches one of six narrow
 triggers (decision, estimate, diagnosis, universal claim, risk, verdict), it appends one
 line: run the controller, `NO_SCAFFOLD` is a valid outcome, do not hand the user a menu. It
-fires **at most once per session**, names no act, and writes every decision — fired or not —
-to `.ct/nudge-log.jsonl`, so the engage rate is a number from outside the model instead of
+fires **at most once per session**, names no act, and logs every prompt that matched a
+trigger — fired or skipped — to `.ct/nudge-log.jsonl` (a prompt that matches nothing leaves no
+trace), so the engage rate is a number from outside the model instead of
 its own account of what it did.
 
 ```json

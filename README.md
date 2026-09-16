@@ -1,8 +1,11 @@
-# critical-thinking-mcp
+# critical-thinking-skills
+
+[![skills.sh](https://skills.sh/b/arashbehmand/critical-thinking-skills)](https://skills.sh/arashbehmand/critical-thinking-skills)
 
 Critical-thinking for LLM agents, split the way the evidence says it should be:
 
-- **Recipes** (`skills/`) — twenty Claude Code skills led by an **autonomous
+- **Recipes** (`skills/`) — twenty agent skills in the open Agent Skills format (Claude
+  Code, Codex, opencode, Cursor and other agents read them), led by an **autonomous
   controller** that recognizes the problem shape, chooses the minimum useful act, and
   treats `NO_SCAFFOLD` as a valid route. The user describes the problem; they do not
   select techniques. Whenever a recipe needs an LLM judgment, the host spawns a **fresh
@@ -14,8 +17,9 @@ Critical-thinking for LLM agents, split the way the evidence says it should be:
   withdrawal impact over recorded commitment dependencies. No LLM calls, no state, no
   cleverness — same input, same output, rule printed with the result.
 - **Locks** (`hooks/`) — the harness rung between the two: standalone stdlib scripts the
-  agent runtime runs. Currently one `Stop` hook that refuses to end a turn shipping a
-  verdict with no gate file. See [hooks/README.md](hooks/README.md).
+  agent runtime runs. A `UserPromptSubmit` hook that hands the controller over on
+  consequential requests, and a `Stop` hook that refuses to end a turn shipping a verdict
+  with no gate file. Claude Code only. See [hooks/README.md](hooks/README.md).
 - **Measurement** (`bench/`) — a seeded adversarial instance generator with hidden ground
   truth, exact scorers, and the process-vs-artifact audit protocol. **Not in this
   repository yet** — it is kept local while the instrument is still being corrected, so
@@ -31,23 +35,83 @@ argument mapping (with server-side judgment elicitation) is the companion projec
 
 ## Install
 
+### Skills, for any agent
+
+```sh
+npx skills add arashbehmand/critical-thinking-skills --list   # see the twenty skills
+npx skills add arashbehmand/critical-thinking-skills -g -y     # install all of them
+npx skills update -g            # later: pick up changes
+```
+
+`-g` installs into `~/.agents/skills/` (read by Codex, opencode, Cursor, GitHub Copilot,
+Gemini CLI and others) and links each skill into `~/.claude/skills/`. Without `-g` the
+skills go into the current project instead. To choose skills, add `--skill <name>` once per
+skill, and keep `critical-thinking` in the set: the other skills use its shared conventions
+and fresh-mind templates. `gh skill install arashbehmand/critical-thinking-skills` reads the same layout.
+
+Skills that need an independent judgment spawn a subagent with the agent's own tool. Where an
+agent has none, the skill runs the judgment in context and says so in its receipt
+(`fresh-mind: degraded (same context)`).
+
+### Claude Code, full install
+
+The plugin adds the math server and the controller nudge hook to the same twenty skills. Use
+it instead of the `npx skills` install for Claude Code, not as well: both at once list every
+skill twice.
+
+```sh
+claude plugin marketplace add arashbehmand/critical-thinking-skills
+claude plugin install critical-thinking@critical-thinking-skills --scope user
+```
+
+Skills are then named `critical-thinking:ct-ach`, `critical-thinking:ct-formalize`, and so
+on. To try it for one session without installing anything, clone the repository and run
+`claude --plugin-dir /path/to/critical-thinking-skills`.
+
+The plugin ships only the nudge hook. The verdict gate (`hooks/verdict_gate_stop.py`) blocks
+a reply once when it carries a verdict label and no gate file exists; add it to
+`~/.claude/settings.json` by hand if you want that lock everywhere (see
+[hooks/README.md](hooks/README.md)).
+
+### The math server, for other agents
+
+The skills work without it: every calculation also ships as a standard-library script inside
+its skill. The server gives agents the same calculations as MCP tools, and runs from a clone
+of this repository:
+
+```sh
+codex mcp add critical-thinking -- uv run --directory /path/to/critical-thinking-skills ctmcp
+```
+
+For opencode, add to `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "mcp": {
+    "critical-thinking": {
+      "type": "local",
+      "command": ["uv", "run", "--directory", "/path/to/critical-thinking-skills", "ctmcp"]
+    }
+  }
+}
+```
+
+The server also serves the skills as `skill://` resources for MCP clients that cannot load
+skills. That route is weaker: a model reaches a recipe only by reading it from the server, and
+never sees the skill descriptions while choosing (checked 2026-09-16: with only the server,
+Claude Code listed none of the twenty skills).
+
+### Receipts
+
+Skills write their receipts under `.ct/` in whatever project you are in. Keep them out of git
+everywhere with `echo ".ct/" >> ~/.gitignore_global` (or your global excludes file).
+
+### Development
+
 ```sh
 uv sync
 uv run pytest        # offline
 ```
-
-Register the math server with Claude Code:
-
-```sh
-claude mcp add critical-thinking -- uv run --directory /path/to/critical-thinking-mcp ctmcp
-```
-
-The MCP server advertises all twenty recipes as `skill://` resources. A client starts
-with `skill://critical-thinking/SKILL.md`; that controller silently routes the task and
-loads only the chosen act. It must not ask the user to browse or select the toolbox. The
-resources remain live inside this repo too (`.claude/skills` → `skills/`); for hosts without MCP
-skill-resource support, copy the skill directories into that project's `.claude/skills/`
-or into `~/.claude/skills/` for global use.
 
 ## Tools (all pure functions)
 

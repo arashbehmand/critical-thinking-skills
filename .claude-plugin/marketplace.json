@@ -1,0 +1,14 @@
+{
+  "name": "critical-thinking-skills",
+  "description": "Critical-thinking skills, a pure-math MCP server and harness hooks for coding agents.",
+  "owner": {
+    "name": "Arash Behmand"
+  },
+  "plugins": [
+    {
+      "name": "critical-thinking",
+      "source": "./",
+      "description": "Thinking procedures for agents, a pure-math MCP server, and a controller nudge hook."
+    }
+  ]
+}

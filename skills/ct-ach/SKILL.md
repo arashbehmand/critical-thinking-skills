@@ -36,7 +36,7 @@ racing several explanations.
    `origins.py` proposes the clusters; the judgment of which are really one observation
    stays yours.
 5. **Rate cells independently — the honesty core.** For **each evidence item**, spawn a
-   fresh cell-rater (template T3, `critical-thinking/references/subagent-templates.md`)
+   fresh cell-rater (template T3, the `critical-thinking` skill's `references/subagent-templates.md`)
    that sees the full hypothesis list and *that one evidence item only*: `C` (would
    expect to see this if the hypothesis were true), `I` (would be surprised), `N`
    (uninformative). The rater never sees your lean, other evidence, or other ratings —
@@ -48,14 +48,16 @@ racing several explanations.
    and it costs one agent per evidence item. Measured on a bench instance with a known
    answer, per-item rating placed the true cause **third**; seven bagged perspectives —
    each seeing the whole question and two thirds of the evidence — voted it **first**, at
-   a tenth of the calls (`ct-ensemble/references/example.md`). Reach for per-cell rating
+   a tenth of the calls (the `ct-ensemble` skill's `references/example.md`). Reach for per-cell rating
    when you want the matrix itself: the flip-cell report, the non-diagnostic list, and a
    cell-level artifact someone can argue with. Reach for the ensemble when you want the
    verdict and to know what it rests on.
 6. **Assemble `matrix.json`** (schema below) and score:
 
+   `<skill-dir>` is the folder this skill was loaded from; with the `critical-thinking` server connected, its `score_ach` tool computes the same result.
+
    ```sh
-   python3 skills/ct-ach/scripts/ach_score.py .ct/ach--<slug>/matrix.json
+   python3 <skill-dir>/scripts/ach_score.py .ct/ach--<slug>/matrix.json
    ```
 
 7. **Read the report:**

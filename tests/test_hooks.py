@@ -192,10 +192,11 @@ def test_nudge_fires_on_consequential_wording_only(
     result = nudge(prompt, tmp_path)
     assert result.returncode == 0
     assert ("critical-thinking" in result.stdout) is fires
-    logged = [
-        json.loads(line) for line in (tmp_path / ".ct/nudge-log.jsonl").read_text().splitlines()
-    ]
-    assert logged[-1]["fired"] is fires  # every decision is logged, fired or not
+    log = tmp_path / ".ct/nudge-log.jsonl"
+    if fires:
+        assert json.loads(log.read_text().splitlines()[-1])["fired"] is True
+    else:  # installed system-wide, an ordinary prompt must not create .ct/ in the project
+        assert not (tmp_path / ".ct").exists()
 
 
 def test_nudge_fires_at_most_once_per_session(tmp_path: Path) -> None:

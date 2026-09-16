@@ -17,7 +17,7 @@ different slice of the evidence, and the output is what a verdict rests on.
 ## Procedure
 
 1. **Write ONE canonical prompt** (template T4,
-   `critical-thinking/references/subagent-templates.md`): the question, every material
+   the `critical-thinking` skill's `references/subagent-templates.md`): the question, every material
    needed to answer it, and the exact output format
    (`ANSWER: <integer 0–10>` / `ANSWER: <option>`). No lean, no draft, no hint.
 2. **Spawn N identical fresh panelists.** N = 3 for cheap calls, 5 when it matters.
@@ -28,10 +28,12 @@ different slice of the evidence, and the output is what a verdict rests on.
 4. **Aggregate mechanically — never in your head.** Name who supplied each draw, and for
    numeric panels where the numbers came from:
 
+   `<skill-dir>` is the folder this skill was loaded from; with the `critical-thinking` server connected, its `aggregate_numeric` and `aggregate_vote` tools compute the same results.
+
    ```sh
-   python3 skills/ct-panel/scripts/aggregate.py --mode numeric \
+   python3 <skill-dir>/scripts/aggregate.py --mode numeric \
      --source opus,opus,sonnet,opus,human --pedigree elicited 6 7 4 7 5
-   python3 skills/ct-panel/scripts/aggregate.py --mode vote --source opus A B A A C
+   python3 <skill-dir>/scripts/aggregate.py --mode vote --source opus A B A A C
    ```
 
    `--source` and `--pedigree` take one value for the whole panel, or one per draw

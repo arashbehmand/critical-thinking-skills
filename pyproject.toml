@@ -1,10 +1,10 @@
 [project]
-name = "critical-thinking-mcp"
+name = "critical-thinking-skills"
 version = "0.2.0"
-description = "Critical-thinking recipes for LLM agents plus a pure-math MCP server that aggregates judgments into decisions"
+description = "Critical-thinking skills for AI agents, plus a pure-math MCP server that aggregates the judgments they collect"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["fastmcp>=2.0"]
+dependencies = ["fastmcp>=3.4,<4"]
 
 [project.scripts]
 ctmcp = "ctmcp.server.app:main"

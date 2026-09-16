@@ -28,7 +28,7 @@ it `ct-definition-pin`, which keeps the question and fixes what its words mean.
    most often treated as noise, or requires the most excuses? If there is none, write
    `NO_ANOMALY`; do not invent one to justify the act.
 3. **Get frames from an uncommitted mind.** Run template T11 from
-   `critical-thinking/references/subagent-templates.md`. It receives the question and raw
+   the `critical-thinking` skill's `references/subagent-templates.md`. It receives the question and raw
    observations only — not your proposed answer. Keep all materially distinct frames it
    returns, including inconvenient ones.
 4. **Apply four perturbations yourself**, retaining only results that genuinely change

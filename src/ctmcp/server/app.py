@@ -22,7 +22,7 @@ PURE = {"readOnlyHint": True, "idempotentHint": True}
 SKILLS_DIRECTORY = Path(__file__).resolve().parents[3] / "skills"
 
 mcp: FastMCP[None] = FastMCP(
-    name="critical-thinking-mcp",
+    name="critical-thinking",
     instructions=(
         "Critical-thinking recipes plus pure deterministic aggregators. Read "
         "skill://critical-thinking/SKILL.md first: it silently routes the user's problem "

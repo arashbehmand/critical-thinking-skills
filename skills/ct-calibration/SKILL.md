@@ -16,8 +16,10 @@ measured answer.
 
 1. **Log at statement time.** When a probability that matters leaves your mouth:
 
+   `<skill-dir>` is the folder this skill was loaded from; with the `critical-thinking` server connected, its `score_calibration` tool computes the same report.
+
    ```sh
-   python3 skills/ct-calibration/scripts/brier.py add \
+   python3 <skill-dir>/scripts/brier.py add \
      --file .ct/predictions.jsonl \
      --q "the retry fix resolves issue #88 with no recurrence for 30 days" \
      --p 0.8 --resolve-by 2026-08-26
@@ -28,14 +30,14 @@ measured answer.
 2. **Read the scorecard at session start** when the file exists:
 
    ```sh
-   python3 skills/ct-calibration/scripts/brier.py report --file .ct/predictions.jsonl
+   python3 <skill-dir>/scripts/brier.py report --file .ct/predictions.jsonl
    ```
 
    Overdue predictions surface here — resolve them before making new ones.
 3. **Resolve on observation, not vibes:**
 
    ```sh
-   python3 skills/ct-calibration/scripts/brier.py resolve \
+   python3 <skill-dir>/scripts/brier.py resolve \
      --file .ct/predictions.jsonl --id p-3 --outcome 1 --resolved-by ci \
      --note "CI green 30 days, no reopen"
    ```
