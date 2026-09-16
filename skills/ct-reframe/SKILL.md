@@ -1,6 +1,6 @@
 ---
 name: ct-reframe
-description: Challenge whether the asked question is the right problem before solving it — expose the current frame, start from the anomaly it explains worst, generate materially different boundaries and success criteria with a fresh mind, and record what would make each frame wrong. Use when work is stuck, repeated fixes do not touch the problem, an observation does not fit, the question smuggles in a solution or fixed constraint, or a consequential answer may be precise about the wrong target.
+description: Changes the question itself — its target, boundary, unit, timeframe or success test — while keeping the raw observations, generating materially different framings from a fresh mind and recording what would make each one wrong. Use when work is stuck, repeated fixes do not touch the problem, an observation does not fit the current explanation, or the question smuggles in a solution or a fixed constraint, so an answer may be precise about the wrong target. Not for a right question that is merely stated awkwardly (that is ct-reformat) or a right question that needs computing (that is ct-formalize) — both of those keep the question, and this act exists to decide whether it should survive.
 argument-hint: [the question or situation to reframe]
 ---
 
@@ -12,7 +12,9 @@ success criterion; once those choices enter the question, every later tool treat
 facts. Reframing makes those choices contestable before computation hardens them.
 
 This is not `ct-reformat`. Reformat changes the representation while preserving the
-question. Reframe asks whether the question itself should survive.
+question. Reframe asks whether the question itself should survive. Nor is it `ct-formalize`,
+which also keeps the question and hands the answering to a solver or a simulation. Nor is
+it `ct-definition-pin`, which keeps the question and fixes what its words mean.
 
 ## Procedure
 

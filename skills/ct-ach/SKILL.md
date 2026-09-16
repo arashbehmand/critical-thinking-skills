@@ -1,6 +1,6 @@
 ---
 name: ct-ach
-description: Race competing explanations against the evidence in a matrix - each evidence-hypothesis pair rated by an independent fresh subagent, then a bundled script picks the survivor by least inconsistency and reports which single cell would flip the ranking. Use for "what explains this" questions - debugging a weird failure, diagnosing a metric change, attributing an outage, weighing competing theories - whenever more than one story fits the facts.
+description: Picks which of several competing explanations survives the evidence — lists mutually exclusive hypotheses, has a fresh subagent rate every evidence item against every hypothesis, ranks them by least inconsistency with a bundled script, and reports the single rating that would flip the ranking. Use for "what explains this" questions — debugging a weird failure, diagnosing a metric change, attributing an outage, weighing competing theories — whenever more than one story fits the facts. Not for finding which evidence a conclusion rests on (that is ct-ensemble), and not for one yes-or-no claim argued pro and con (that is ct-argument-map).
 argument-hint: [the observation to explain]
 ---
 
@@ -12,6 +12,11 @@ Heuer's fix, built for intelligence analysts: judge each piece of evidence again
 hypotheses, and crown the one with the **least evidence against it** — not the most for
 it, because almost any story can collect consistent evidence, while inconsistent evidence
 is what actually kills.
+
+This is not `ct-ensemble`, which asks what a verdict rests on by hiding evidence from each
+mind; ACH shows every item to a rater and asks which explanation survives. Nor is it
+`ct-argument-map`, which settles one yes-or-no claim through a pro/con tree rather than
+racing several explanations.
 
 ## Procedure
 

@@ -1,6 +1,6 @@
 ---
 name: ct-ensemble
-description: Get several genuinely fresh perspectives on one problem by giving each a different random slice of the evidence, then vote mechanically and measure which evidence the verdict actually rests on. Use when a body of evidence supports more than one reading, when you want to know what a conclusion is load-bearing on, or when a single pass has already produced an answer you want stress-tested - "what is this resting on", "would we still conclude that without X", "get me other perspectives".
+description: Finds what a conclusion rests on — gives each fresh subagent the same question and hypotheses but a different random slice (about two thirds) of the evidence, votes mechanically, and scores each evidence item by how much seeing it moved the verdict. Needs a set of discrete evidence items and competing answers to choose between. Use when evidence supports more than one reading, to stress-test a conclusion already reached, or for "what is this resting on", "would we still conclude that without X", "other perspectives on this evidence". Not for a noisy score or pick on a fixed prompt with nothing to slice — asking the identical question several times is ct-panel. Not for deciding which of several explanations survives the evidence (that is ct-ach).
 argument-hint: [the question, plus the evidence file]
 ---
 
@@ -18,6 +18,10 @@ decorrelates its trees by giving each a *resample* of the data, not a single col
 tree stays a real predictor. Here, each agent sees the whole question and every
 hypothesis, and about two thirds of the evidence — enough to have a view, different
 enough to have its own.
+
+This is not `ct-panel`. A panel sends the identical prompt several times to measure the
+noise in one judgment; nothing varies. An ensemble varies the evidence on purpose, and it
+needs discrete evidence items to vary — a single judgment with nothing to slice is a panel.
 
 ## Procedure
 

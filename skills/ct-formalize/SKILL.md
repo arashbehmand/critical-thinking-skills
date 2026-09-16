@@ -1,6 +1,6 @@
 ---
 name: ct-formalize
-description: Recognize the formal shape of a problem — allocation under constraints, a graph, a scheduling or satisfiability question, waiting and queues, noisy measurement, feedback and delay, uncertainty over inputs — then write it down as that object in code and let a solver, enumeration or simulation answer it instead of reasoning it out in prose. Also borrows a discipline's machinery when the behavior is familiar even if the domain is not. Use for optimization, allocation, scheduling, routing, capacity, dependency and reachability questions, rate and stock models, threshold and error-cost tradeoffs, "what is the best/most/least/fastest", "will this converge", "why does this keep oscillating", "our error is stuck", and any quantitative answer someone will act on.
+description: Keeps the question and hands the answering to a machine — names the formal object underneath (an allocation, schedule, graph, queue, feedback loop, noisy measurement, or a range of uncertain inputs), writes it as a model in code, runs a solver, enumeration or simulation, and then attacks the encoding. Use for best, most, least or fastest questions, capacity, scheduling, routing, dependency and reachability, threshold and error-cost tradeoffs, things that oscillate or never converge, and any number someone will act on that is being worked out in prose. Not when a clear restatement makes the answer doable by hand (that is ct-reformat), not when the question itself may be the wrong one (that is ct-reframe), and not for a rough estimate built from guessed factors (that is ct-question-tree, Fermi mode).
 argument-hint: [the problem that might be an ordinary formal object in disguise]
 ---
 
@@ -14,6 +14,11 @@ is invisible, the constraints are half-remembered, and nothing checks the result
 The act: **name the object, write it as that object in a file, let a machine answer it, then
 attack the encoding.** The leverage is independent computation — it adds no evidence about
 the world, and it replaces fallible in-head work on the property it actually checks.
+
+This is not `ct-reformat`, whose restatement makes a problem doable by hand; formalize is
+for answers a careful person should not be computing by hand at all. Nor is it
+`ct-reframe`: formalize takes the question as given and makes it exact, so run reframe
+first if the question itself is in doubt.
 
 ## Shape catalog — the signal, then the object
 

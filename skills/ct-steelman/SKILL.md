@@ -1,6 +1,6 @@
 ---
 name: ct-steelman
-description: Build the strongest honest case for the other side using a fresh subagent that has no ownership of the draft, then judge both cases blind. Use before concluding on any contested question; when an argument feels one-sided; when the user says "steelman", "devil's advocate", "what would critics say", or "am I missing something".
+description: Builds the strongest honest case against the conclusion you lean toward — a fresh subagent with no ownership of the draft argues the other side, then both cases are judged blind. Use before concluding on any contested question; when an argument feels one-sided; when the user says "steelman", "devil's advocate", "what would critics say", or "am I missing something". Not for imagining how a plan fails once carried out (that is ct-premortem), and not for listing the premises a claim quietly relies on (that is ct-assumption-audit).
 argument-hint: [the contested question]
 ---
 
@@ -11,6 +11,10 @@ fix is not "try harder to be fair" — ownership poisons counter-effort no matte
 you try. The fix is structural: the other side's case is built by a mind that does not
 know it is "the other side", and the comparison is judged blind. Production is split;
 evaluation — the stronger faculty — carries the verdict.
+
+This is not `ct-premortem`, which assumes a plan was carried out and failed and asks how.
+Nor is it `ct-assumption-audit`, which lists the premises under a claim. A steelman argues
+that the conclusion itself is wrong.
 
 ## Procedure
 

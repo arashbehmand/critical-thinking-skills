@@ -1,6 +1,6 @@
 ---
 name: ct-consistency-log
-description: Log every decision and factual position taken during long multi-step work along with what it rests on, sweep for contradictions, propagate retractions, and simulate each premise's withdrawal to show which recorded claims it carries. Use for tasks spanning many steps or sessions - migrations, long documents, multi-file refactors, investigations; or when the user says "didn't you say earlier", "we changed our mind about that", "what is load-bearing", or "keep our decisions straight".
+description: Keeps your own decisions straight across a long task — logs every decision and factual position taken during multi-step work with what it rests on, sweeps for contradictions, propagates retractions, and simulates each premise's withdrawal to show which recorded claims it carries. Use for tasks spanning many steps or sessions — migrations, long documents, multi-file refactors, investigations; or when the user says "didn't you say earlier", "we changed our mind about that", "what is load-bearing", or "keep our decisions straight". Not for tying a deliverable's factual claims to outside sources (that is ct-evidence-ledger).
 argument-hint: [optional topic slug for the log file]
 ---
 
@@ -15,6 +15,10 @@ Two failures, two sweeps. `pairs` catches *"I said A at step 3 and not-A at step
 `check` catches *"I withdrew A at step 4 and step 19 still rests on it"* — which the pair
 sweep cannot see, and which is invisible in the output by construction: a conclusion
 resting on a retracted premise looks exactly like a correct one.
+
+This is not `ct-evidence-ledger`, which ties a deliverable's factual claims to outside
+sources. The consistency log tracks your own decisions and positions over time, and what
+each one rests on.
 
 ## Procedure
 

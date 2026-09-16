@@ -46,26 +46,63 @@ Answer normally; do not create a routing receipt merely to record that nothing r
 
 | Failure signal in the task | Run |
 |---|---|
-| the asked question may be the wrong problem; an anomaly does not fit; the work is stuck in one frame | `ct-reframe` |
-| a universal, invariant, guarantee, or "must/never" claim could be broken by one witness | `ct-counterexample` |
+| the asked question may be the wrong problem: an anomaly does not fit, fixes do not touch it, the work is stuck in one frame — *changes the question* | `ct-reframe` |
+| a universal, invariant, guarantee, or "must/never" claim could be broken by one witness — *attacks a claim about every case* | `ct-counterexample` |
 | a big or vague question invites a one-jump answer | `ct-question-tree` |
-| a number cannot be looked up directly | `ct-question-tree` (Fermi mode) |
-| the question is an ordinary formal object in disguise: allocation, scheduling, a graph, a threshold, queues, feedback, noisy measurement | `ct-formalize` |
-| a quantitative answer is being reasoned out in prose, or the same fix keeps failing in a familiar-looking way | `ct-formalize` |
-| a result is about to be computed from a model, formula, table, diagram, or data copied out of a source | `ct-sanity-check` first |
-| a load-bearing word is contestable ("safe", "better", "significant") | `ct-definition-pin` |
-| the representation is slippery: probabilities, negations, abstractions, prose comparisons | `ct-reformat` |
-| a claim or plan rests on premises nobody stated | `ct-assumption-audit` |
-| a contested conclusion already has an owner or a lean | `ct-steelman`, then `ct-verdict-gate` if consequential |
-| several mutually exclusive explanations fit the same evidence | `ct-ach` |
-| several evidence-conditioned perspectives are useful, including what drives their split | `ct-ensemble` |
-| a factual deliverable could contain naked claims | `ct-evidence-ledger` |
-| sources may be relevant without entailing the claims, or may share one origin | `ct-entailment` |
-| work spans many decisions, files, steps, or sessions | `ct-consistency-log` |
-| a score, grade, estimate, or pick-one judgment is noisy across occasions | `ct-panel` |
-| a plan is about to become costly or hard to reverse | `ct-premortem` |
+| a number cannot be looked up directly — *estimates it from guessed factor ranges* | `ct-question-tree` (Fermi mode) |
+| the question is right but is an ordinary formal object in disguise: allocation, scheduling, a graph, a threshold, queues, feedback, noisy measurement — *keeps the question, answers it in code* | `ct-formalize` |
+| a quantitative answer that needs a solver, search or simulation is being reasoned out in prose, or the same fix keeps failing in a familiar-looking way | `ct-formalize` |
+| a result is about to be computed from a model, formula, table, diagram, or data copied out of a source — *inspects a representation you built* | `ct-sanity-check` first |
+| a load-bearing word is contestable ("safe", "better", "significant") — *keeps the question, fixes its words* | `ct-definition-pin` |
+| the question is right and answerable by hand, but its notation invites mistakes: probabilities, negations, abstractions, prose comparisons — *keeps the question, changes the notation* | `ct-reformat` |
+| a claim or plan rests on premises nobody stated — *inspects the premises* | `ct-assumption-audit` |
+| a contested conclusion already has an owner or a lean — *argues the conclusion is wrong* | `ct-steelman`, then `ct-verdict-gate` if consequential |
+| several mutually exclusive explanations fit the same evidence — *decides which one survives* | `ct-ach` |
+| a set of evidence items supports more than one reading, and it matters which items the verdict rests on — *varies the evidence each fresh mind sees* | `ct-ensemble` |
+| a factual deliverable could contain naked claims — *does each claim have a source* | `ct-evidence-ledger` |
+| sources may be relevant without entailing the claims, or may share one origin — *does the source actually say it* | `ct-entailment` |
+| work spans many decisions, files, steps, or sessions — *your own decisions over time* | `ct-consistency-log` |
+| a score, grade, estimate, or pick-one judgment is noisy across occasions — *the identical prompt to several fresh minds; nothing varies* | `ct-panel` |
+| a plan is about to become costly or hard to reverse — *assumes the plan failed and asks how* | `ct-premortem` |
 | a probability matters and will resolve later | `ct-calibration` |
-| a claim needs a quantitative, editable pro/con verdict | `ct-argument-map` (argLLM MCP) |
+| one yes-or-no claim needs a quantitative, editable pro/con verdict — *one claim, for and against* | `ct-argument-map` (argLLM MCP) |
+
+### Near neighbours
+
+Some rows describe symptoms that overlap. Break the tie by what the act changes, not by
+which symptom sounds closest.
+
+- **`ct-reframe`, `ct-reformat`, `ct-formalize`** all apply to a slippery question. Ask what
+  should change: the *question* → `ct-reframe`; only its *notation*, after which it is
+  doable by hand → `ct-reformat`; *who answers it*, because it needs a solver, search or
+  simulation → `ct-formalize`. When unsure whether the question is right, reframe first —
+  the other two harden whatever question they are handed.
+- **`ct-panel` and `ct-ensemble`** both send work to several fresh minds and vote. Ask what
+  varies between those minds: *nothing*, the prompt is identical and the question is how
+  noisy one judgment is → `ct-panel`; *the evidence each one sees*, and the question is what
+  the verdict rests on → `ct-ensemble`. Without discrete evidence items to slice, an
+  ensemble is just a panel.
+- **`ct-ach`, `ct-ensemble`, `ct-argument-map`** all weigh evidence toward a conclusion. Ask
+  what you need to learn: *which of several explanations survives* → `ct-ach`; *what an
+  existing verdict rests on* → `ct-ensemble`; *whether one yes-or-no claim holds*, with a
+  verdict others can contest → `ct-argument-map`.
+- **`ct-steelman`, `ct-premortem`, `ct-assumption-audit`** all attack before commitment. Ask
+  what is under attack: *the conclusion* → `ct-steelman`; *the plan, once carried out* →
+  `ct-premortem`; *the premises underneath* → `ct-assumption-audit`. `ct-verdict-gate` does
+  none of these; it checks that the relevant ones ran.
+- **`ct-evidence-ledger` and `ct-entailment`** both deal with sources. *Does each claim have a
+  source?* → ledger. *Does the source actually say it, and how many independent origins?* →
+  entailment, which starts from the ledger's pairs.
+- **`ct-question-tree` (Fermi mode) and `ct-formalize`** both produce numbers. *Estimated from
+  guessed factor ranges* → Fermi. *Computed exactly from given data by a solver, search or
+  simulation* → formalize.
+- **`ct-counterexample` and `ct-sanity-check`** both check with execution. *A claim about every
+  case* → counterexample. *A representation you built, before computing from it* → sanity
+  check.
+- **`ct-definition-pin` and `ct-reframe`**: *keep the question and fix what its words mean* →
+  pin; *the question itself may be wrong* → reframe.
+- **`ct-consistency-log` and `ct-evidence-ledger`**: *your own decisions and positions over a
+  long task* → log; *a deliverable's claims against outside sources* → ledger.
 
 ## Progressive escalation
 

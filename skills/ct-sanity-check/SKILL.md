@@ -1,6 +1,6 @@
 ---
 name: ct-sanity-check
-description: Before computing from a representation you built — an equation, a model file, parsed or retyped data, a table, a graph, a diagram, a spreadsheet — step back and check the representation itself against what must be true of it. Counts match the source, units balance, totals are conserved, formulas reduce to cases you can solve another way, quantities stay in bounds, and the shape rules still hold: triangle angles sum to 180, parallel lines do not meet, probabilities sum to one, adding a server never makes the wait longer. Catches the wrong-model-exact-answer failure. Use after writing a model or formula, after parsing or copying data out of a problem, before trusting any computed result, and whenever a clean-looking table or plot is about to be believed.
+description: Before computing from a representation you built — an equation, a model file, parsed or retyped data, a table, a graph, a diagram, a spreadsheet — step back and check the representation itself against what must be true of it. Counts match the source, units balance, totals are conserved, formulas reduce to cases you can solve another way, quantities stay in bounds, and the shape rules still hold — triangle angles sum to 180, parallel lines do not meet, probabilities sum to one, adding a server never makes the wait longer. Catches the wrong-model-exact-answer failure. Use after writing a model or formula, after parsing or copying data out of a problem, before trusting any computed result, and whenever a clean-looking table or plot is about to be believed. Not for testing whether a general claim holds in every case (that is ct-counterexample).
 argument-hint: [the model, table, formula or data you are about to compute from]
 ---
 
@@ -16,6 +16,9 @@ A practised engineer or mathematician looks at the page before trusting the crun
 the angles still add to 180, did the parallel lines stay parallel, does the balance sheet
 balance. This act is that look, made explicit, and every check in it is executed rather
 than eyeballed.
+
+This is not `ct-counterexample`, which tries to break a claim about every case. A sanity
+check inspects one representation you built, before you compute from it.
 
 ## What must be true — the check catalog
 

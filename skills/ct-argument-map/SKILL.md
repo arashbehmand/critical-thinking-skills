@@ -1,6 +1,6 @@
 ---
 name: ct-argument-map
-description: Drive the argLLM MCP server to build a quantitative argument map (QBAF) for a contested claim - the verdict computed by gradual semantics from fresh-context base scores, then contested by editing scores and adding, removing, or expanding arguments, with sensitivity probing for flip points. Use when a contested claim needs a transparent, contestable verdict; when the user says "map the arguments", "verify this claim", or "what would change the verdict". Requires the argllm MCP server (degraded fallback documented inside).
+description: Settles one contested yes-or-no claim with a computed, editable verdict — drives the argLLM MCP server to build a quantitative pro/con argument map (QBAF) from fresh-context base scores, computes the verdict by gradual semantics, and lets anyone contest it by editing scores or adding, removing or expanding arguments, with probing for flip points. Use when a contested claim needs a transparent, contestable verdict; when the user says "map the arguments", "verify this claim", or "what would change the verdict". Requires the argllm MCP server (degraded fallback documented inside). Not for choosing among several competing explanations (that is ct-ach), and not for writing the other side's best case in prose (that is ct-steelman).
 argument-hint: [the claim to verify]
 ---
 
@@ -14,6 +14,10 @@ structure and never stored; every edit is copy-on-write with a revision history.
 skill-only argument map, where the same mind that holds the lean writes all the numbers
 into a file, is a lawyer with a spreadsheet. This skill is the *driver's manual* for the
 machinery, not a replacement.
+
+This is not `ct-ach`: an argument map weighs one claim for and against, while ACH races
+several mutually exclusive explanations. Nor is it `ct-steelman`, which writes the other
+side's best case in prose and computes nothing.
 
 ## Drive procedure
 

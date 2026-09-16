@@ -1,6 +1,6 @@
 ---
 name: ct-definition-pin
-description: Pin operational definitions of the load-bearing words before arguing or evaluating, so verbal disputes die early instead of poisoning everything after. Use when a question turns on words like "safe", "better", "fair", "soon", "significant", "done"; when two sides seem to disagree about facts but might disagree about meanings; or before evaluating anything against criteria.
+description: Keeps the question and fixes what its load-bearing words mean — pins operational definitions of words like "safe", "better", "fair", "soon", "significant", "done" before arguing or evaluating, so verbal disputes die early instead of poisoning everything after. Use when a question turns on such words; when two sides seem to disagree about facts but might disagree about meanings; or before evaluating anything against criteria. Not when the question itself may be the wrong one (that is ct-reframe).
 argument-hint: [the claim or question containing the loaded terms]
 ---
 
@@ -10,6 +10,9 @@ Many disagreements are two meanings of one word wearing a single spelling. Argue
 unpinned, every step inherits the ambiguity, and both sides can be "right" until the end,
 when the dispute reappears intact. Pin the words first; the verbal part of the dispute
 dies in minute one.
+
+This is not `ct-reframe`. Pinning keeps the question and fixes what its words mean;
+reframing asks whether the question should survive at all.
 
 ## Procedure
 

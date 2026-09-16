@@ -1,6 +1,6 @@
 ---
 name: ct-panel
-description: Replace one roll of the dice with the median of an independent panel - the same canonical question to several fresh subagents, mechanical aggregation by a bundled script, disagreement surfaced instead of averaged away. Use for noisy one-shot judgments - scores, grades, ratings, effort estimates, pick-one decisions - whenever the answer would plausibly differ on a different day.
+description: Measures and cancels the noise in one judgment — sends the identical prompt, with identical material, to several fresh subagents, aggregates their answers with a bundled script, and reports the median or majority together with the spread. Every panelist sees exactly the same thing, with no varied lenses and no varied evidence. Use for a score, grade, rating, effort estimate or pick-one decision that would plausibly come out differently if asked again tomorrow. Not for learning what a conclusion rests on, or for different viewpoints on a body of evidence — that varies what each mind sees, which is ct-ensemble.
 argument-hint: [the judgment call to panelize]
 ---
 
@@ -9,6 +9,10 @@ argument-hint: [the judgment call to panelize]
 The same mind gives different answers on different days — noise, not bias, and a single
 draw hides it completely. Panels fix the noise the mechanical way: several independent
 draws, arithmetic in the middle, and the spread reported instead of laundered.
+
+This is not `ct-ensemble`. A panel varies nothing: every panelist gets the identical prompt
+and material, and the output is how noisy one judgment is. An ensemble gives each mind a
+different slice of the evidence, and the output is what a verdict rests on.
 
 ## Procedure
 

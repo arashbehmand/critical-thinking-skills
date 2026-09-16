@@ -1,6 +1,6 @@
 ---
 name: ct-reformat
-description: Translate a problem into the representation where reasoning is most accurate before answering - probabilities into natural frequencies, prose comparisons into tables, negation stacks into affirmatives, abstractions into concrete cases. Use when a question feels slippery, involves probabilities or base rates, compares several options in prose, or is stated with double negatives, big numbers, or heavy abstraction.
+description: Keeps the question and changes only its notation, so that once restated it can be worked out reliably by hand — percentages into natural frequencies (counts out of 1,000), options compared in prose into a table, stacked negations into plain affirmatives, an abstraction into one concrete case. Use when the right question is stated in a way that invites mistakes — base rates and conditional probabilities, several options compared in prose, double negatives, very large or small numbers, vague quantifiers. Not when the question itself may be the wrong one (that is ct-reframe), and not when even a clear restatement still needs a solver, a search or a simulation to answer (that is ct-formalize).
 argument-hint: [the awkwardly-stated problem]
 ---
 
@@ -9,6 +9,10 @@ argument-hint: [the awkwardly-stated problem]
 The difficulty is often in the wording, not the problem: the same question asked in
 counts instead of percentages, or as a table instead of prose, is suddenly easy. Minds —
 human and model — are format-sensitive. Translate first; then think.
+
+This is not `ct-reframe`, which asks whether the question should change; reformat keeps the
+question exactly. Nor is it `ct-formalize`: if the restated problem still needs a solver,
+a search or a simulation rather than a page of arithmetic, formalize it instead.
 
 ## The translation catalog
 

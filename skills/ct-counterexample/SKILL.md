@@ -1,6 +1,6 @@
 ---
 name: ct-counterexample
-description: Try to falsify a universal claim, invariant, guarantee, specification, or proposed rule by finding and shrinking one admissible counterexample, using execution, tests, search, or a solver before model judgment. Use for "always", "never", "must", "cannot", "guaranteed", safety properties, API invariants, mathematical conjectures, and designs whose correctness depends on all cases; distinguishes a proved result from bounded search that merely found no witness.
+description: Tries to break a claim about every case — freezes what an "always", "never", guarantee, invariant, specification or proposed rule covers, then searches for one admissible counterexample with execution, tests, search or a solver before model judgment, and shrinks any it finds. Use for "always", "never", "must", "cannot", "guaranteed", safety properties, API invariants, mathematical conjectures, and designs whose correctness depends on all cases; distinguishes a proved result from bounded search that merely found no witness. Not for checking your own model or copied data before computing from it (that is ct-sanity-check).
 argument-hint: [the claim to try to break]
 ---
 
@@ -10,6 +10,10 @@ Universal claims are asymmetric: one admissible witness can kill them, while a h
 friendly examples cannot prove them. Search for the witness directly. The valuable part
 is not "be sceptical"; it is moving the claim into an independently constrained channel
 whenever execution, enumeration, property tests, or a solver can decide a case.
+
+This is not `ct-sanity-check`, which checks a model or data you built before computing
+from it. A counterexample search attacks a claim about every case and looks for the one
+case that breaks it.
 
 ## Procedure
 

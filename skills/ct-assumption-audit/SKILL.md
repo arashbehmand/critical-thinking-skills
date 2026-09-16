@@ -1,6 +1,6 @@
 ---
 name: ct-assumption-audit
-description: Surface the unstated assumptions a claim or plan stands on, rate how load-bearing and how shaky each one is, and attack the weakest load-bearing one first. Use before relying on a conclusion, when a claim "feels obvious", when reviewing a plan or design, or when the user asks "what are we assuming" or "what could make this wrong".
+description: Lists what a claim or plan silently takes for granted — surfaces the unstated assumptions, rates each by how much rests on it and how shaky it is, and attacks the weakest load-bearing one first. Use before relying on a conclusion, when a claim "feels obvious", when reviewing a plan or design, or when the user asks "what are we assuming". Not for building the opposing case (that is ct-steelman), and not for telling the story of how a plan fails in practice (that is ct-premortem).
 argument-hint: [the claim or plan to audit]
 ---
 
@@ -9,6 +9,9 @@ argument-hint: [the claim or plan to audit]
 A claim stands on premises nobody wrote down — and that is where it breaks. Most weak
 arguments do not die at the main claim; they die at an assumption its supporters never
 noticed they were making. Write the floor down before standing on it.
+
+This is not `ct-steelman`, which builds the opposing case, nor `ct-premortem`, which
+imagines the plan failing. An audit keeps the claim and inspects what it stands on.
 
 ## Procedure
 

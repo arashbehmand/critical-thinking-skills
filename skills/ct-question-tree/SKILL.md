@@ -1,6 +1,6 @@
 ---
 name: ct-question-tree
-description: Decompose a big question into a tree of small, separately answerable sub-questions, answer the leaves independently, and build the final answer only from the children. Includes Fermi mode for numeric estimates with a bundled interval-arithmetic script. Use for broad or vague questions, multi-part comparisons, and "estimate how many/much" questions with no direct source; when the user says "break this down" or an honest answer would need several distinct facts.
+description: Splits a big or vague question into small sub-questions answered separately, and builds the answer only from those parts; its Fermi mode turns a number nobody has a source for into factor ranges combined by a bundled interval-arithmetic script. Use for broad or vague questions, multi-part comparisons, and "estimate how many/much" questions with no direct source; when the user says "break this down" or an honest answer needs several distinct facts. Not for a problem whose exact answer a solver, search or simulation can compute from the data given (that is ct-formalize).
 argument-hint: [the big question]
 ---
 
@@ -9,6 +9,10 @@ argument-hint: [the big question]
 A big question is usually five smaller ones wearing a coat. Answered in one jump, some of
 the five get skipped — and you cannot see which. Split it, answer the parts on their own,
 and let the final answer be assembled from parts you can point at.
+
+This is not `ct-formalize`. A question tree splits a question into parts and, in Fermi
+mode, estimates a number from guessed factor ranges. When the data is given and a solver,
+search or simulation can compute the exact answer, formalize instead.
 
 ## Procedure
 

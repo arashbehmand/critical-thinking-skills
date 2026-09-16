@@ -1,6 +1,6 @@
 ---
 name: ct-evidence-ledger
-description: Keep a ledger tying every factual claim in a deliverable to its source with a quality grade, so unsourced claims stop blending in with backed ones. Use for fact-heavy answers, reports, research summaries, and decision documents; when the user asks "where did that come from"; or before publishing anything with numbers, dates, quotes, or causal statements in it.
+description: Finds the factual claims that have no source — ties every claim in a deliverable to its source with a quality grade, so unsourced claims stop blending in with backed ones. Use for fact-heavy answers, reports, research summaries and decision documents; when the user asks "where did that come from"; or before publishing anything with numbers, dates, quotes or causal statements in it. Not for checking whether a cited source actually says what it is cited for, or how many independent origins stand behind a claim (that is ct-entailment, which works on this ledger's claim-source pairs).
 argument-hint: [the deliverable to audit, or start logging as you draft]
 ---
 
@@ -10,6 +10,11 @@ Confident sentences outlive their sources: the claim survives every rewrite, whe
 came from is lost by the second draft. A ledger re-couples them — and makes the claims
 with *nothing* behind them visible instead of letting them borrow credibility from their
 neighbors.
+
+This is not `ct-entailment`. The ledger asks whether each claim has a source at all;
+entailment takes the ledger's pairs and asks whether each source actually says it. Nor is
+it `ct-consistency-log`, which tracks your own decisions across a long task, not a
+deliverable's claims.
 
 ## Grades
 

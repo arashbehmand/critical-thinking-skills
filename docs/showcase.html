@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>critical-thinking-mcp</title>
+<style>
+:root {
+  --ground: #f2f4f1;
+  --surface: #fbfcfa;
+  --ink: #1b2422;
+  --muted: #5a6662;
+  --rule: #d2d9d4;
+  --accent: #0e6b70;
+  --accent-soft: #dcebea;
+  --evidence: #2b63a8;
+  --compute: #177457;
+  --structure: #8f5f12;
+  --bar-a: #0e6b70;
+  --bar-b: #8f5f12;
+  --focus: #0e6b70;
+  --display: "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0f1513;
+    --surface: #161e1b;
+    --ink: #e2e8e5;
+    --muted: #9aa6a1;
+    --rule: #2a3531;
+    --accent: #5bb8bc;
+    --accent-soft: #1b3334;
+    --evidence: #86addf;
+    --compute: #64c7a0;
+    --structure: #d6a95e;
+    --bar-a: #5bb8bc;
+    --bar-b: #d6a95e;
+    --focus: #5bb8bc;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0f1513;
+  --surface: #161e1b;
+  --ink: #e2e8e5;
+  --muted: #9aa6a1;
+  --rule: #2a3531;
+  --accent: #5bb8bc;
+  --accent-soft: #1b3334;
+  --evidence: #86addf;
+  --compute: #64c7a0;
+  --structure: #d6a95e;
+  --bar-a: #5bb8bc;
+  --bar-b: #d6a95e;
+  --focus: #5bb8bc;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 15px/1.6 var(--body);
+  padding: env(safe-area-inset-top, 0px) 20px env(safe-area-inset-bottom, 0px);
+}
+.page { max-width: 1080px; margin: 0 auto; padding-block: 40px 72px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; text-wrap: balance; margin: 0; line-height: 1.2; }
+h1 { font-size: clamp(2rem, 4.5vw, 2.9rem); letter-spacing: -0.01em; }
+h2 { font-size: 1.6rem; }
+h3 { font-size: 1.08rem; }
+p { margin: 0; }
+code, .mono { font-family: var(--mono); font-size: 0.88em; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+
+.eyebrow {
+  font: 600 0.72rem/1 var(--body);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+}
+.lede { max-width: 64ch; color: var(--muted); font-size: 1.05rem; }
+section { margin-top: 64px; display: grid; gap: 20px; }
+.section-head { display: grid; gap: 8px; max-width: 68ch; }
+.section-head p { color: var(--muted); }
+
+/* header */
+.masthead { display: grid; gap: 18px; padding-bottom: 28px; border-bottom: 1px solid var(--rule); }
+.masthead-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.theme-toggle {
+  font: 500 0.8rem var(--body); color: var(--muted); background: transparent;
+  border: 1px solid var(--rule); border-radius: 999px; padding: 5px 12px; cursor: pointer;
+}
+.theme-toggle:hover { color: var(--ink); border-color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 24px; color: var(--muted); font-size: 0.92rem; }
+.facts b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* leverage chips */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font: 600 0.7rem/1 var(--body); letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 4px 8px 4px 7px; border-radius: 999px; border: 1px solid currentColor;
+}
+.chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.chip.evidence { color: var(--evidence); }
+.chip.compute { color: var(--compute); }
+.chip.structure { color: var(--structure); }
+
+/* layers */
+.layers { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.layer { background: var(--surface); padding: 20px; display: grid; gap: 8px; align-content: start; }
+.layer .count { font: 600 2rem/1 var(--display); font-variant-numeric: tabular-nums; }
+.layer p { color: var(--muted); font-size: 0.93rem; }
+.layer .where { font-family: var(--mono); font-size: 0.8rem; color: var(--ink); }
+.rule-note { font-size: 0.92rem; color: var(--muted); max-width: 72ch; }
+.rule-note b { color: var(--ink); }
+.leverage-key { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.leverage-key div { display: grid; gap: 6px; align-content: start; }
+.leverage-key .chip, .answer dd .chip { justify-self: start; }
+.leverage-key p { font-size: 0.9rem; color: var(--muted); }
+
+/* finder */
+.finder { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 0; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.situations { display: grid; align-content: start; border-right: 1px solid var(--rule); }
+.situation {
+  text-align: left; background: transparent; color: var(--ink); border: 0; border-bottom: 1px solid var(--rule);
+  font: 500 0.93rem/1.4 var(--body); padding: 12px 16px; cursor: pointer; display: grid; gap: 2px;
+}
+.situation:last-child { border-bottom: 0; }
+.situation small { color: var(--muted); font-weight: 400; font-size: 0.8rem; }
+.situation:hover { background: var(--ground); }
+.situation[aria-selected="true"] { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.answer { padding: 24px; display: grid; gap: 18px; align-content: start; }
+.answer .acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.act-tag { font: 500 0.82rem var(--mono); padding: 3px 9px; border-radius: 6px; background: var(--ground); border: 1px solid var(--rule); }
+.answer dl { display: grid; grid-template-columns: max-content 1fr; gap: 10px 18px; margin: 0; }
+.answer dt { font: 600 0.72rem/1.9 var(--body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.answer dd { margin: 0; }
+.prompt-example { font-family: var(--display); font-style: italic; font-size: 1.05rem; border-left: 2px solid var(--rule); padding-left: 14px; color: var(--ink); }
+
+/* acts */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filter {
+  font: 500 0.82rem var(--body); color: var(--ink); background: var(--surface); cursor: pointer;
+  border: 1px solid var(--rule); border-radius: 999px; padding: 5px 12px;
+}
+.filter[aria-pressed="true"] { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+.groups { display: grid; gap: 28px; }
+.group { display: grid; gap: 10px; }
+.group-title { display: flex; align-items: baseline; gap: 12px; border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
+.group-title span { color: var(--muted); font-size: 0.85rem; }
+.acts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.acts-grid[data-count="2"], .acts-grid[data-count="4"] { grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+.act { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
+.act-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.act-name { font: 600 0.92rem var(--mono); }
+.act p { font-size: 0.9rem; }
+.act .gets { color: var(--muted); font-size: 0.85rem; }
+.act .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.act .uses { font: 0.78rem var(--mono); color: var(--muted); }
+.group[hidden], .act[hidden] { display: none !important; }
+
+/* tables */
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 0.9rem; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 0.72rem var(--body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); background: var(--ground); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-family: var(--mono); font-size: 0.84rem; white-space: nowrap; }
+
+/* hooks */
+.hooks { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.hook { border: 1px solid var(--rule); border-radius: 8px; padding: 16px; background: var(--surface); display: grid; gap: 8px; align-content: start; }
+.hook p { font-size: 0.9rem; color: var(--muted); }
+
+/* results */
+.headline-numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.number { border-top: 2px solid var(--ink); padding-top: 10px; display: grid; gap: 4px; }
+.number .n { font: 600 1.9rem/1 var(--display); font-variant-numeric: tabular-nums; }
+.number p { font-size: 0.88rem; color: var(--muted); }
+.chart-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); padding: 16px; }
+.chart { display: block; min-width: 620px; width: 100%; height: auto; }
+.chart text { fill: var(--ink); font-family: var(--body); font-size: 12px; }
+.chart .axis text { fill: var(--muted); font-size: 11px; }
+.chart .grid line { stroke: var(--rule); }
+.chart .bar-a { fill: var(--bar-a); }
+.chart .bar-b { fill: var(--bar-b); }
+.chart .val { font-variant-numeric: tabular-nums; font-size: 11px; fill: var(--muted); }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.plain-list { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; }
+.plain-list li { padding-left: 2px; }
+.plain-list li::marker { color: var(--muted); }
+.note { font-size: 0.85rem; color: var(--muted); max-width: 72ch; }
+
+pre {
+  margin: 0; overflow-x: auto; font: 0.82rem/1.55 var(--mono); background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; color: var(--ink);
+}
+footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.85rem; }
+
+@media (max-width: 760px) {
+  .finder { grid-template-columns: 1fr; }
+  .situations { border-right: 0; border-bottom: 1px solid var(--rule); max-height: 280px; overflow-y: auto; }
+  .answer dl { grid-template-columns: 1fr; gap: 2px 0; }
+  .answer dd { margin-bottom: 8px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .situation, .filter, .theme-toggle { transition: background-color .15s, color .15s, border-color .15s; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="masthead">
+  <div class="masthead-top">
+    <span class="eyebrow">Toolbox for AI agents · v1.4 branch</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">Theme: system</button>
+  </div>
+  <h1>critical-thinking-mcp</h1>
+  <p class="lede">A set of thinking procedures an agent follows, a small math server that does the arithmetic those procedures need, and two harness hooks. It gives the agent the habits a careful engineer or analyst uses: split the problem, test the explanation, compute instead of guess, and check the work before trusting it.</p>
+  <div class="facts">
+    <span><b>20</b> skills</span>
+    <span><b>7</b> math tools</span>
+    <span><b>2</b> hooks</span>
+    <span><b>0</b> model calls inside the package</span>
+    <span>Works in Claude Code; the skills also work without the server</span>
+  </div>
+</header>
+
+<section aria-labelledby="whats-in">
+  <div class="section-head">
+    <span class="eyebrow">What is in the box</span>
+    <h2 id="whats-in">Three layers, each doing one job</h2>
+  </div>
+  <div class="layers">
+    <div class="layer">
+      <span class="eyebrow">Method</span>
+      <span class="count">20</span>
+      <h3>Skills</h3>
+      <p>Written procedures the agent follows. A controller picks the smallest useful one for the problem, or none. When a step needs a judgment, the skill has the agent ask a fresh subagent that never saw the draft.</p>
+      <span class="where">skills/</span>
+    </div>
+    <div class="layer">
+      <span class="eyebrow">Locks</span>
+      <span class="count">2</span>
+      <h3>Hooks</h3>
+      <p>Small scripts the agent harness runs at fixed moments. One hands the controller to the agent when a request looks consequential. One stops a verdict from shipping without its checklist file.</p>
+      <span class="where">hooks/</span>
+    </div>
+    <div class="layer">
+      <span class="eyebrow">Arithmetic</span>
+      <span class="count">7</span>
+      <h3>Math server</h3>
+      <p>An MCP server of pure functions: rank hypotheses, combine estimates, score calibration, evaluate an argument tree, find which premise a conclusion rests on. Same input, same output, rule printed with the result.</p>
+      <span class="where">src/ctmcp/</span>
+    </div>
+  </div>
+  <p class="rule-note"><b>Every result says where its strength came from.</b> The package keeps three kinds of help apart, because polished prose blurs them:</p>
+  <div class="leverage-key">
+    <div><span class="chip evidence">Evidence</span><p>Something from outside the model: a source, an observation, a resolved outcome.</p></div>
+    <div><span class="chip compute">Computation</span><p>Code, a solver or a formula did the work, so it is exact about what it was given.</p></div>
+    <div><span class="chip structure">Structure</span><p>The problem was split, reframed or seen by a fresh mind. Useful, but it adds no new facts.</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="where">
+  <div class="section-head">
+    <span class="eyebrow">Where it helps</span>
+    <h2 id="where">Pick the situation you are in</h2>
+    <p>You never name a technique. You describe the problem; the controller picks. This shows what it would reach for.</p>
+  </div>
+  <div class="finder">
+    <div class="situations" role="tablist" aria-label="Situations" id="situations"></div>
+    <div class="answer" role="tabpanel" id="answer" aria-live="polite"></div>
+  </div>
+</section>
+
+<section aria-labelledby="acts">
+  <div class="section-head">
+    <span class="eyebrow">The skills</span>
+    <h2 id="acts">Twenty acts, grouped by the job they do</h2>
+  </div>
+  <div class="filters" role="group" aria-label="Filter by kind of help">
+    <button class="filter" type="button" data-filter="all" aria-pressed="true">All</button>
+    <button class="filter" type="button" data-filter="evidence" aria-pressed="false">Evidence</button>
+    <button class="filter" type="button" data-filter="compute" aria-pressed="false">Computation</button>
+    <button class="filter" type="button" data-filter="structure" aria-pressed="false">Structure</button>
+  </div>
+  <div class="groups" id="groups"></div>
+</section>
+
+<section aria-labelledby="math">
+  <div class="section-head">
+    <span class="eyebrow">Math server</span>
+    <h2 id="math">Seven tools that only do arithmetic</h2>
+    <p>No tool calls a model or keeps state. Two of them refuse, rather than warn, when a made-up input would decide the answer.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tool</th><th>You give it</th><th>You get back</th><th>Used by</th></tr></thead>
+      <tbody>
+        <tr><td>score_ach</td><td>hypotheses, evidence, and a rating for each pair</td><td>hypotheses ranked by least inconsistency, and the single rating that would flip the ranking</td><td>ct-ach</td></tr>
+        <tr><td>aggregate_numeric</td><td>independent numeric judgments, each with its origin</td><td>median, spread, a disagreement flag; <b>refuses</b> if a made-up number sits at the median</td><td>ct-panel</td></tr>
+        <tr><td>aggregate_vote</td><td>independent picks from a fixed set</td><td>winner, its share, a tie or weak-winner flag</td><td>ct-panel</td></tr>
+        <tr><td>combine_fermi</td><td>factor ranges for an estimate, each with its origin</td><td>low, point and high by interval arithmetic; <b>refuses</b> if a made-up factor carries the width</td><td>ct-question-tree</td></tr>
+        <tr><td>score_calibration</td><td>probability predictions and how they resolved</td><td>Brier score and stated-versus-happened bins, split by who resolved them</td><td>ct-calibration</td></tr>
+        <tr><td>evaluate_qbaf</td><td>a pro/con argument tree with base scores</td><td>strength of every argument and the verdict, by DF-QuAD</td><td>ct-argument-map</td></tr>
+        <tr><td>analyze_dependencies</td><td>a log of decisions and what each rests on</td><td>what falls if each premise is withdrawn, ranked by impact</td><td>ct-consistency-log</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="hooks">
+  <div class="section-head">
+    <span class="eyebrow">Hooks</span>
+    <h2 id="hooks">Two things a skill cannot do for itself</h2>
+    <p>A skill is advice. The model most likely to skip it is the confident one. These run outside the model. Both fail open: if anything goes wrong, the session carries on untouched.</p>
+  </div>
+  <div class="hooks">
+    <div class="hook">
+      <span class="act-name">controller_nudge.py</span>
+      <h3>Makes the skills get used</h3>
+      <p>Runs when you send a message. If the wording looks consequential (a decision, an estimate, a "why did", a "never", a risk), it adds one line asking the agent to run the controller. Once per session at most. Every decision is logged, so you can count how often it engages.</p>
+    </div>
+    <div class="hook">
+      <span class="act-name">verdict_gate_stop.py</span>
+      <h3>No verdict without its checklist</h3>
+      <p>Runs when the agent tries to finish. If the reply ships a verdict ("Recommendation:", "Decision:", go/no-go) and no gate file was written this session, it blocks once and asks for the gate. Skipping items is allowed; skipping them silently is not.</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="measured">
+  <div class="section-head">
+    <span class="eyebrow">What we measured</span>
+    <h2 id="measured">It helps weaker models, when they are told to use it</h2>
+    <p>Task: math word problems with a needed number removed. The right answer is "this can't be solved". Every comparison was written down and hashed before it ran, and each has a known-good control to prove the test could see an effect.</p>
+  </div>
+  <div class="headline-numbers">
+    <div class="number"><span class="n">+10.4 pts</span><p>Claude Haiku 4.5, real skills vs the same model told to think harder. 95% range +3.1 to +18.8, 96 problems.</p></div>
+    <div class="number"><span class="n">+33.3 pts</span><p>Gemini 3.5 Flash Lite, same comparison. 95% range +18.8 to +47.9, 48 problems.</p></div>
+    <div class="number"><span class="n">0 of 200</span><p>Runs where Haiku opened a skill that was installed but not mentioned. Availability is not use.</p></div>
+  </div>
+  <div class="chart-wrap">
+    <div class="legend" aria-hidden="true"><span><i style="background:var(--bar-a)"></i>Claude Haiku 4.5 · 96 problems</span><span><i style="background:var(--bar-b)"></i>Gemini 3.5 Flash Lite · 48 problems</span></div>
+    <svg class="chart" id="chart" role="img" aria-labelledby="chart-title chart-desc"><title id="chart-title">Share of problems answered correctly, by instruction</title><desc id="chart-desc">Grouped bars for seven instructions and two models.</desc></svg>
+  </div>
+  <p class="note">Claude Opus 5 scored 93.8% on the same problems whatever it was told, so this task cannot show whether the skills help a strong model. That question is still open.</p>
+  <div class="two-col">
+    <div class="group">
+      <h3>What the numbers say</h3>
+      <ul class="plain-list">
+        <li>The gain is not just extra effort. Thinking harder, or being told to reason at length, does not close the gap.</li>
+        <li>It is not the ceremony of opening a skill. A fake "garden planner" skill, opened every time, added nothing for Gemini.</li>
+        <li>The weaker the model, the bigger the gain: about 10 points for Haiku, about 33 for Gemini.</li>
+        <li>An installed skill that nobody points at does nothing. That is why the nudge hook exists.</li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3>What they do not say yet</h3>
+      <ul class="plain-list">
+        <li>One kind of task only: spotting that a question cannot be answered.</li>
+        <li>Two weaker models; no working test on a frontier model.</li>
+        <li>The newest acts, <code>ct-formalize</code> and <code>ct-sanity-check</code>, have only a small behaviour probe: with them, Haiku wrote and ran code on 10 of 10 hard problems and got all 10 right, against 9 of 10 without. Too few runs to call it a gain.</li>
+        <li>Whether the nudge hook works as well as a direct instruction is not measured.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="not-for">
+  <div class="section-head">
+    <span class="eyebrow">Where it won't help</span>
+    <h2 id="not-for">Leave it off for these</h2>
+  </div>
+  <div class="two-col">
+    <ul class="plain-list">
+      <li><b>Quick, ordinary requests.</b> Renaming a variable or answering a lookup needs no procedure. The controller's most common correct answer is to do nothing.</li>
+      <li><b>Problems the model already gets right.</b> A strong model on an easy task has no room to improve; the skills add cost and length.</li>
+      <li><b>Missing facts.</b> Structure cannot supply evidence. If the needed fact is not available, the right output is a named gap, not a better-looking guess.</li>
+    </ul>
+    <ul class="plain-list">
+      <li><b>Wrong models, computed exactly.</b> A solver is exact about what it was given. If the model of the problem is wrong, the answer is exactly wrong. The sanity check reduces this; it does not remove it.</li>
+      <li><b>Proof that the procedure ran.</b> A written receipt shows a receipt was written. The hooks and the math server narrow this gap; they do not close it.</li>
+      <li><b>Human judgment calls.</b> Values, priorities and irreversible actions go back to you, not to a procedure.</li>
+    </ul>
+  </div>
+</section>
+
+<section aria-labelledby="install">
+  <div class="section-head">
+    <span class="eyebrow">Install</span>
+    <h2 id="install">Three steps, each optional</h2>
+  </div>
+  <div class="two-col">
+    <div class="group">
+      <h3>1. The skills</h3>
+      <p class="note">Copy the skill folders into a project, or into your home folder for every project. They work without the server; their scripts use the Python standard library only.</p>
+<pre>cp -r skills/* your-project/.claude/skills/
+# or, for every project:
+cp -r skills/* ~/.claude/skills/</pre>
+      <h3>2. The math server</h3>
+<pre>claude mcp add critical-thinking -- \
+  uv run --directory /path/to/critical-thinking-mcp ctmcp</pre>
+    </div>
+    <div class="group">
+      <h3>3. The hooks</h3>
+      <p class="note">Add to <code>.claude/settings.json</code>. Use full paths.</p>
+<pre>{
+  "hooks": {
+    "UserPromptSubmit": [{"hooks": [{"type": "command",
+      "command": "python3 /path/to/hooks/controller_nudge.py"}]}],
+    "Stop": [{"hooks": [{"type": "command",
+      "command": "python3 /path/to/hooks/verdict_gate_stop.py"}]}]
+  }
+}</pre>
+    </div>
+  </div>
+</section>
+
+<footer>
+  critical-thinking-mcp · 20 skills, 7 tools, 2 hooks · results from the v1.4 plan, <code>docs/v1.4-plan.md</code> · this page works offline and loads nothing from the network
+</footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- theme ---------- */
+  var root = document.documentElement;
+  var toggle = document.getElementById("theme-toggle");
+  var modes = ["system", "light", "dark"];
+  function applyTheme(mode) {
+    if (mode === "system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", mode);
+    toggle.textContent = "Theme: " + mode;
+  }
+  var saved = "system";
+  try { saved = localStorage.getItem("ct-showcase-theme") || "system"; } catch (e) {}
+  applyTheme(saved);
+  toggle.addEventListener("click", function () {
+    var current = root.getAttribute("data-theme") || "system";
+    var next = modes[(modes.indexOf(current) + 1) % modes.length];
+    applyTheme(next);
+    try { localStorage.setItem("ct-showcase-theme", next); } catch (e) {}
+  });
+
+  function el(tag, attrs, children) {
+    var node = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      if (k === "text") node.textContent = attrs[k];
+      else if (k === "html") node.innerHTML = attrs[k];
+      else node.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) { node.appendChild(c); });
+    return node;
+  }
+  var LABEL = { evidence: "Evidence", compute: "Computation", structure: "Structure" };
+  function chip(kind) { return el("span", { "class": "chip " + kind, text: LABEL[kind] }); }
+
+  /* ---------- situations ---------- */
+  var SITUATIONS = [
+    { title: "A production failure with several possible causes", hint: "debugging, outages, metric drops",
+      acts: ["ct-ach", "ct-entailment"], kinds: ["structure", "compute"],
+      example: "Checkout errors doubled after Tuesday's deploy. Was it the deploy, the payment provider, or the cache change?",
+      does: "Lists the competing explanations, has a fresh subagent rate each piece of evidence against each one, and ranks them by how much evidence contradicts them.",
+      gets: "A ranked list, and the one rating that would flip the top two. If that rating rests on a doubtful source, it checks the source next.",
+      tool: "score_ach" },
+    { title: "A decision that is expensive to undo", hint: "migrations, launches, architecture",
+      acts: ["ct-premortem", "ct-steelman", "ct-verdict-gate"], kinds: ["structure"],
+      example: "Should we move the billing database to the new cluster this quarter?",
+      does: "Assumes the plan already failed and asks fresh subagents why. Builds the strongest case against the lean. Runs a short checklist before the recommendation ships.",
+      gets: "Failure modes turned into plan changes and warning signs to watch, the best opposing case, and a gate file the Stop hook looks for.",
+      tool: "none" },
+    { title: "A number nobody has a source for", hint: "sizing, cost, how many / how much",
+      acts: ["ct-question-tree"], kinds: ["structure", "compute"],
+      example: "Roughly how many support tickets will the new feature add per month?",
+      does: "Splits the number into factors that can each be estimated or looked up, with a range for each, and combines them with interval arithmetic.",
+      gets: "A low, point and high estimate, which factor drives the width, and a refusal if a made-up factor would decide it.",
+      tool: "combine_fermi" },
+    { title: "An allocation, schedule, route or capacity question", hint: "optimization, queues, graphs, thresholds",
+      acts: ["ct-formalize", "ct-sanity-check"], kinds: ["compute"],
+      example: "How many agents keep the average phone wait under 30 seconds at 170 calls an hour?",
+      does: "Names the kind of problem (here a queue), writes it as a model in a file, runs a solver or simulation, and checks the model before trusting it: counts against the source, a case with a known answer, units, direction.",
+      gets: "The model file, the executed result, the checks it passed or failed, and which input moves the answer most.",
+      tool: "host Python" },
+    { title: "A report full of facts and citations", hint: "research summaries, due diligence",
+      acts: ["ct-evidence-ledger", "ct-entailment"], kinds: ["evidence", "compute"],
+      example: "Write up what is known about the drug interaction, with sources.",
+      does: "Ties every factual claim to a source with a grade, asks a fresh reader whether each source actually says it, and groups sources that trace back to one origin.",
+      gets: "A ledger of claims and sources, a list of unsupported claims, and a count of independent origins instead of documents.",
+      tool: "scripts" },
+    { title: "Work that spans many steps or sessions", hint: "long refactors, investigations, migrations",
+      acts: ["ct-consistency-log"], kinds: ["structure", "compute"],
+      example: "We are halfway through moving 40 services. Keep the decisions straight.",
+      does: "Logs each decision with what it rests on, sweeps for contradictions, and when a premise is withdrawn, marks everything that depended on it.",
+      gets: "An append-only log, the list of conclusions to revisit after a change, and which premise carries the most.",
+      tool: "analyze_dependencies" },
+    { title: "Someone says it “never” or “always” happens", hint: "invariants, guarantees, rules",
+      acts: ["ct-counterexample"], kinds: ["compute"],
+      example: "This lock guarantees two workers can never write the same row.",
+      does: "Freezes what the claim covers and searches for one case that breaks it, by running code, tests or a solver before arguing about it.",
+      gets: "The smallest breaking case if one exists, or a clear note that the search found none within its bounds, which is not a proof.",
+      tool: "host Python" },
+    { title: "A score or rating that changes run to run", hint: "grading, triage, effort estimates",
+      acts: ["ct-panel"], kinds: ["structure", "compute"],
+      example: "Rate these 30 bug reports for severity.",
+      does: "Sends the identical question, with identical material, to several fresh subagents and combines their answers by rule. Nothing varies between them: the point is to see how noisy one judgment is.",
+      gets: "A median or majority, and how much the raters disagreed.",
+      tool: "aggregate_numeric / aggregate_vote" },
+    { title: "A conclusion from a pile of evidence: what does it rest on?", hint: "stress-testing a verdict you already reached",
+      acts: ["ct-ensemble"], kinds: ["structure", "compute"],
+      example: "We decided the churn spike is about pricing, from 20 customer interviews. Would we still think so without the three loudest ones?",
+      does: "Gives each fresh subagent the same question but a different random two thirds of the evidence, votes by rule, and scores each item by how much seeing it moved the verdict.",
+      gets: "The vote split, and the evidence items the conclusion depends on most. Not for a noisy score on a fixed prompt; that is a panel.",
+      tool: "bag.py" },
+    { title: "The work is stuck, or the question feels wrong", hint: "repeated fixes, fuzzy goals",
+      acts: ["ct-reframe", "ct-definition-pin"], kinds: ["structure"],
+      example: "We have tuned the retry logic four times and timeouts keep coming back.",
+      does: "Separates what was observed from how the problem was framed, starts from the fact the current frame explains worst, and pins down the words the question hinges on.",
+      gets: "Two or three different framings, what would prove each wrong, and agreed meanings for the load-bearing terms.",
+      tool: "none" },
+    { title: "A quick, ordinary request", hint: "most requests",
+      acts: ["no scaffold"], kinds: [],
+      example: "Rename totalCount to total_count in this file.",
+      does: "Nothing. The controller recognizes that no procedure would help and gets out of the way.",
+      gets: "The normal answer, at normal cost. This is the most common correct route.",
+      tool: "none" }
+  ];
+
+  var list = document.getElementById("situations");
+  var answer = document.getElementById("answer");
+  function show(index) {
+    var s = SITUATIONS[index];
+    Array.prototype.forEach.call(list.children, function (btn, i) {
+      btn.setAttribute("aria-selected", i === index ? "true" : "false");
+      btn.tabIndex = i === index ? 0 : -1;
+    });
+    answer.innerHTML = "";
+    answer.appendChild(el("span", { "class": "eyebrow", text: "What the controller reaches for" }));
+    answer.appendChild(el("h3", { text: s.title }));
+    answer.appendChild(el("p", { "class": "prompt-example", text: "“" + s.example + "”" }));
+    answer.appendChild(el("div", { "class": "acts" }, s.acts.map(function (a) { return el("span", { "class": "act-tag", text: a }); })));
+    var dl = el("dl");
+    [["What it does", s.does], ["What you get", s.gets], ["Math", s.tool]].forEach(function (pair) {
+      dl.appendChild(el("dt", { text: pair[0] }));
+      dl.appendChild(el("dd", { text: pair[1] }));
+    });
+    dl.appendChild(el("dt", { text: "Kind of help" }));
+    dl.appendChild(el("dd", {}, s.kinds.length ? [el("span", { "class": "acts" }, s.kinds.map(chip))] : [el("span", { text: "none needed" })]));
+    answer.appendChild(dl);
+  }
+  SITUATIONS.forEach(function (s, i) {
+    var btn = el("button", { "class": "situation", type: "button", role: "tab", id: "situation-" + i, "aria-controls": "answer" },
+      [el("span", { text: s.title }), el("small", { text: s.hint })]);
+    btn.addEventListener("click", function () { show(i); });
+    btn.addEventListener("keydown", function (e) {
+      var next = e.key === "ArrowDown" ? i + 1 : e.key === "ArrowUp" ? i - 1 : null;
+      if (next === null) return;
+      e.preventDefault();
+      next = (next + SITUATIONS.length) % SITUATIONS.length;
+      show(next);
+      list.children[next].focus();
+    });
+    list.appendChild(btn);
+  });
+  show(0);
+
+  /* ---------- acts ---------- */
+  var GROUPS = [
+    { name: "Choose", blurb: "decides what, if anything, to run", acts: [
+      ["critical-thinking", "Reads the problem and picks the smallest useful act, or none. Escalates only when a step turns up a real problem.", "A route, not a menu. Asks you only about values, ambiguous meanings, facts only you have, or irreversible actions.", ["structure"], "all other skills"] ] },
+    { name: "Frame the problem", blurb: "before solving anything", acts: [
+      ["ct-reframe", "Changes the question itself: its target, boundary or success test. Starts from the fact the current framing explains worst.", "Alternative framings and what would prove each wrong. Not for a right question stated awkwardly (ct-reformat) or one that needs computing (ct-formalize).", ["structure"], ""],
+      ["ct-definition-pin", "Fixes working definitions for the words the argument turns on: safe, better, done, significant.", "Agreed meanings, so disagreements about words stop posing as disagreements about facts.", ["structure"], ""],
+      ["ct-reformat", "Keeps the question and changes only its notation: counts instead of percentages, a table instead of prose.", "The same question, now doable by hand. If it still needs a solver, that is ct-formalize.", ["structure"], ""],
+      ["ct-question-tree", "Splits a big question into small ones answered separately; Fermi mode for numbers with no source.", "An answer built only from parts you can point at, with ranges.", ["structure", "compute"], "fermi.py · combine_fermi"] ] },
+    { name: "Explain and test", blurb: "when a claim or a story needs pressure", acts: [
+      ["ct-ach", "Races competing explanations against the evidence, each cell rated by a fresh subagent.", "A ranking by least contradiction and the one rating that would flip it.", ["structure", "compute"], "ach_score.py · score_ach"],
+      ["ct-assumption-audit", "Lists what a claim or plan quietly assumes and attacks the shakiest load-bearing one.", "Assumptions ranked by how much rests on them and how weak they are.", ["structure"], ""],
+      ["ct-counterexample", "Tries to break an “always” or “never” by finding one case, using code or a solver first.", "The smallest counterexample, or an honest note that bounded search found none.", ["compute"], "host tools"] ] },
+    { name: "Compute and check", blurb: "stop doing it in your head", acts: [
+      ["ct-formalize", "Keeps the question and hands the answering to a machine: recognizes an allocation, schedule, graph, queue, filter or feedback loop, writes it as a model, and runs a solver or simulation.", "A model file, an executed result, and which input moves the answer. Not for a rough estimate from guessed factors (ct-question-tree).", ["compute"], "host Python"],
+      ["ct-sanity-check", "Before trusting a computed result, checks the representation itself: counts against the source, units, conservation, a case with a known answer, the shape's own rules.", "A record of each check, how it ran, and what failed and was fixed.", ["compute"], "host Python"] ] },
+    { name: "Sources", blurb: "for fact-heavy work", acts: [
+      ["ct-evidence-ledger", "Ties every factual claim in a deliverable to a source with a quality grade.", "A ledger and a list of claims with no backing.", ["evidence"], "ledger.py"],
+      ["ct-entailment", "Asks a fresh reader whether each source actually says what it is cited for, and groups sources by common origin.", "Per-claim verdicts and a count of independent origins.", ["evidence", "compute"], "origins.py"] ] },
+    { name: "Other minds", blurb: "judgments from contexts that never saw your draft", acts: [
+      ["ct-steelman", "Builds the strongest honest case for the other side with a fresh subagent, then judges both cases blind.", "The best opposing argument and a blind comparison.", ["structure"], ""],
+      ["ct-panel", "Sends the identical prompt to several fresh subagents and combines their answers by rule. Nothing varies; it measures how noisy one judgment is.", "Median or majority, and the spread. Not for what a verdict rests on (ct-ensemble).", ["structure", "compute"], "aggregate.py · aggregate_numeric · aggregate_vote"],
+      ["ct-ensemble", "Gives each fresh mind a different random slice of the evidence, votes by rule, and measures what the verdict rests on.", "The evidence the verdict depends on most. Not for a noisy score (ct-panel) or picking the surviving explanation (ct-ach).", ["structure", "compute"], "bag.py"],
+      ["ct-argument-map", "Builds a pro/con argument tree for a contested claim and computes the verdict; edit a score and watch it change.", "A contestable verdict with flip points. Needs the separate argLLM server.", ["structure", "compute"], "argLLM · evaluate_qbaf"] ] },
+    { name: "Plans and long work", blurb: "before committing and while it runs", acts: [
+      ["ct-premortem", "Assumes the plan failed and has fresh subagents explain why, before the decision is final.", "Failure modes turned into plan changes and warning signs.", ["structure"], ""],
+      ["ct-consistency-log", "Logs decisions and what they rest on across a long task; withdrawing a premise marks everything built on it.", "Contradictions found, retractions propagated, premises ranked by what they carry.", ["structure", "compute"], "commitlog.py · analyze_dependencies"],
+      ["ct-calibration", "Logs predictions with a probability and a resolve-by date, then scores them when the truth arrives.", "A Brier score and whether stated confidence matched what happened.", ["evidence", "compute"], "brier.py · score_calibration"],
+      ["ct-verdict-gate", "A short checklist that must be answered in writing before a consequential conclusion ships.", "A gate file; skipped items are allowed but named.", ["structure"], "verdict_gate_stop.py"] ] }
+  ];
+
+  var groupsNode = document.getElementById("groups");
+  GROUPS.forEach(function (g) {
+    var grid = el("div", { "class": "acts-grid", "data-count": String(g.acts.length) });
+    g.acts.forEach(function (a) {
+      var card = el("article", { "class": "act", "data-kinds": a[3].join(" ") }, [
+        el("div", { "class": "act-head" }, [el("span", { "class": "act-name", text: a[0] }), el("span", { "class": "chips" }, a[3].map(chip))]),
+        el("p", { text: a[1] }),
+        el("p", { "class": "gets", text: a[2] })
+      ]);
+      if (a[4]) card.appendChild(el("span", { "class": "uses", text: a[4] }));
+      grid.appendChild(card);
+    });
+    groupsNode.appendChild(el("div", { "class": "group" }, [
+      el("div", { "class": "group-title" }, [el("h3", { text: g.name }), el("span", { text: g.blurb })]),
+      grid
+    ]));
+  });
+
+  var filters = document.querySelectorAll(".filter");
+  Array.prototype.forEach.call(filters, function (btn) {
+    btn.addEventListener("click", function () {
+      var want = btn.getAttribute("data-filter");
+      Array.prototype.forEach.call(filters, function (b) { b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
+      Array.prototype.forEach.call(groupsNode.querySelectorAll(".group"), function (group) {
+        var visible = 0;
+        Array.prototype.forEach.call(group.querySelectorAll(".act"), function (card) {
+          var show = want === "all" || card.getAttribute("data-kinds").split(" ").indexOf(want) !== -1;
+          card.hidden = !show;
+          if (show) visible += 1;
+        });
+        group.hidden = visible === 0;
+      });
+    });
+  });
+
+  /* ---------- chart ---------- */
+  var ROWS = [
+    ["No instruction", 68.8, 16.7],
+    ["Think harder (high effort)", 72.9, 20.8],
+    ["Reason at length", 65.6, 34.0],
+    ["Stop and think", 69.8, 25.0],
+    ["Use a fake skill", 77.1, 27.1],
+    ["Use the real skills", 83.3, 54.2],
+    ["Told the number is missing", 97.9, 85.4]
+  ];
+  var svg = document.getElementById("chart");
+  var NS = "http://www.w3.org/2000/svg";
+  var W = 760, labelW = 190, right = 46, top = 26, rowH = 46, barH = 14;
+  var H = top + ROWS.length * rowH + 8;
+  var plotW = W - labelW - right;
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  function s(tag, attrs, text) {
+    var n = document.createElementNS(NS, tag);
+    Object.keys(attrs).forEach(function (k) { n.setAttribute(k, attrs[k]); });
+    if (text !== undefined) n.textContent = text;
+    svg.appendChild(n);
+    return n;
+  }
+  var grid = document.createElementNS(NS, "g"); grid.setAttribute("class", "grid"); svg.appendChild(grid);
+  var axis = document.createElementNS(NS, "g"); axis.setAttribute("class", "axis"); svg.appendChild(axis);
+  [0, 25, 50, 75, 100].forEach(function (v) {
+    var x = labelW + plotW * v / 100;
+    var line = document.createElementNS(NS, "line");
+    line.setAttribute("x1", x); line.setAttribute("x2", x); line.setAttribute("y1", top - 6); line.setAttribute("y2", H - 6);
+    grid.appendChild(line);
+    var t = document.createElementNS(NS, "text");
+    t.setAttribute("x", x); t.setAttribute("y", 14); t.setAttribute("text-anchor", "middle");
+    t.textContent = v + "%";
+    axis.appendChild(t);
+  });
+  ROWS.forEach(function (row, i) {
+    var y = top + i * rowH;
+    var strong = row[0] === "Use the real skills";
+    s("text", { x: labelW - 12, y: y + barH + 4, "text-anchor": "end", "font-weight": strong ? "600" : "400" }, row[0]);
+    [[row[1], "bar-a", 0], [row[2], "bar-b", barH + 3]].forEach(function (b) {
+      var w = plotW * b[0] / 100;
+      s("rect", { x: labelW, y: y + b[2], width: w, height: barH, rx: 2, "class": b[1] });
+      s("text", { x: labelW + w + 6, y: y + b[2] + barH - 3, "class": "val" }, b[0].toFixed(1) + "%");
+    });
+  });
+})();
+</script>
+</body>
+</html>

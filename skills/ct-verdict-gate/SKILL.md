@@ -1,6 +1,6 @@
 ---
 name: ct-verdict-gate
-description: A pre-verdict checklist that must produce written answers before any consequential conclusion ships - terms pinned, opposing case built by a fresh mind, assumptions audited, claims sourced, flip conditions named. Use before delivering a final recommendation, verdict, go/no-go, or any conclusion someone will act on; when the user says "final answer", "ship it", or "so what's the call".
+description: Checks that the right checks ran before a consequential conclusion ships — a short written checklist (terms pinned, opposing case built by a fresh mind, assumptions audited, claims sourced, flip conditions named) where every skipped item must be named. It does no analysis of its own; each item points at the act that does. Use before delivering a final recommendation, verdict, go/no-go, or any conclusion someone will act on; when the user says "final answer", "ship it", or "so what's the call". Not a substitute for the acts it checks — when an item is missing, run ct-steelman, ct-assumption-audit or ct-evidence-ledger instead of ticking the box.
 argument-hint: [the conclusion about to ship]
 ---
 
@@ -10,6 +10,10 @@ Known checks get skipped exactly when they matter — under time pressure, and w
 answer feels obvious. Awareness does not fire on demand; a checklist that must produce
 *written output* before the verdict unlocks does. This is the set's checklist-gate: the
 last act, run when the others should already have happened.
+
+This is not an analysis. Each checklist item points at the act that does the work —
+`ct-definition-pin`, `ct-steelman`, `ct-assumption-audit`, `ct-evidence-ledger` — and a
+missing item is a reason to run that act, not to tick the box.
 
 ## The gate
 

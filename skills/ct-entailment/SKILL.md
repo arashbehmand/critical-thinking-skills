@@ -1,6 +1,6 @@
 ---
 name: ct-entailment
-description: Check that each load-bearing claim is actually entailed by the source pinned to it, using a fresh context asked the narrow entailment question, then collapse the sources by origin so four restatements of one press release stop counting as four. Use after drafting a fact-heavy answer, before publishing research or a report, when claims are contested, recent, specific, or are base rates; when the user asks "does that source actually say that" or "how many independent sources is that really".
+description: Checks that cited sources actually say what they are cited for — asks a fresh context the narrow question of whether each pinned source entails its claim, then groups sources by origin so four restatements of one press release count once. Use after drafting a fact-heavy answer, before publishing research or a report, when claims are contested, recent, specific or are base rates; when the user asks "does that source actually say that" or "how many independent sources is that really". Needs claims already paired with sources. Not for finding claims that have no source at all (that is ct-evidence-ledger).
 argument-hint: [the finished draft whose factual spine needs checking]
 ---
 
@@ -12,6 +12,10 @@ is about the claim* and *this text entails the claim* is where confident, well-c
 wrong sentences live. The second failure rides along with it: four documents that all
 trace to one press release are one observation wearing four coats, and four citations
 read as stronger than one either way.
+
+This is not `ct-evidence-ledger`, which finds claims with no source. Entailment starts
+where the ledger ends: each claim already has a source, and the question is whether that
+source supports it.
 
 ## When this is worth the calls
 

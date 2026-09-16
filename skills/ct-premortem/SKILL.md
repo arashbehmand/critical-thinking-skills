@@ -1,6 +1,6 @@
 ---
 name: ct-premortem
-description: Assume the plan already failed and have fresh subagents write the post-mortem before the decision is final, converting failure modes into plan changes and observable tripwires. Use before committing to a plan, migration, launch, architecture choice, or irreversible decision; when the user says "premortem", "what could go wrong", or "poke holes in this plan".
+description: Finds how a plan fails before it is committed — assumes the plan already failed, has fresh subagents write the post-mortem, and turns each failure story into a plan change or an observable tripwire. Use before committing to a plan, migration, launch, architecture choice, or irreversible decision; when the user says "premortem", "what could go wrong", or "poke holes in this plan". Not for arguing that the conclusion itself is wrong (that is ct-steelman), and not for auditing the premises a claim rests on (that is ct-assumption-audit).
 argument-hint: [the plan or decision]
 ---
 
@@ -10,6 +10,10 @@ argument-hint: [the plan or decision]
 betraying it. The premortem flips the frame: the failure has *already happened*, and the
 job is to explain a fact, not to attack a proposal. Explanation unlocks specifics that
 critique never surfaces.
+
+This is not `ct-steelman`, which argues the conclusion is wrong; a premortem accepts the
+plan and asks how carrying it out fails. Nor is it `ct-assumption-audit`, which inspects
+premises one at a time instead of telling the failure story.
 
 ## Procedure
 
