@@ -43,14 +43,17 @@ in one sentence and ask which field studies that behavior (next section).
    produces an exact answer to the wrong question. Naming nothing is a valid outcome.
 2. **Write the model in a file, not in prose.** Sets, decision variables, constraints,
    objective, data, units. Keep it small enough to read in one screen. Every input gets a
-   provenance tag in a comment: `measured`, `cited`, or `assumed`.
+   provenance tag in a comment: `measured`, `cited`, or `assumed`. **Data enters by copy,
+   never by retyping:** paste the problem's data block into the file as-is and parse it in
+   code. Retyping 48 edges by hand is how 10 of them go missing.
 3. **Let a machine answer it.** Preference order: exact solver → exhaustive enumeration
-   (when the space is small) → simulation → a formula recalled from memory. Recalled
-   formulas are the weakest link in the chain; check one against a brute-force case.
-4. **Attack the encoding before you trust the number.** Reproduce a case whose answer you
-   already know. Check units and dimensions. Run a degenerate case (zero demand, one
-   server, all costs equal) and confirm the answer is the boring one. Confirm the objective
-   moves the right way when you push an input.
+   (when the space is small) → simulation → a formula recalled from memory. **Running the
+   model is the act.** An answer you did not get by executing the model is not a
+   `ct-formalize` result; if you answer without running it, say so plainly.
+4. **Run `ct-sanity-check` on the model before you trust the number.** At minimum: a count
+   or round trip for every block of data taken from the problem, and a limit case or second
+   method for every formula written from memory — one that does not reuse that formula.
+   Then units, and one check that the answer moves the right way when you push an input.
 5. **Sensitivity, computed not asserted.** Re-run with each load-bearing input at its
    plausible bounds. Report which input moves the answer most. If the answer flips inside
    an input's uncertainty, the flip is the finding, not the point estimate.
@@ -84,7 +87,7 @@ Write `.ct/model-<slug>.md` next to the model code, and cite it in the answer:
 Code: <path>            Tool: <solver/library + version>
 Inputs: <name = value (measured|cited|assumed, source)> …
 Result: <the number or set, with units>
-Checks: known case reproduced · units · degenerate case · objective direction
+Checks: .ct/sanity-<slug>.md (counts / round trip, limit case, units, direction)
 Sensitivity: <input → answer range>; flips at <value> if it flips
 Exact about: the encoding above. Not a claim about the world.
 Frames tried and dropped: <frame → the prediction it got wrong>
@@ -93,6 +96,8 @@ Frames tried and dropped: <frame → the prediction it got wrong>
 ## Integrity rules
 
 - The model file ships with the answer. A number whose code cannot be shown is prose.
+- No retyped data. Parse it from a pasted copy of the source and check the count.
+- No untested formula from memory. It passes a limit case or a second method first.
 - Inputs carry provenance. If a load-bearing input is `assumed` and the answer depends on
   it, that dependency is the finding — report it rather than a confident number. The
   `aggregate_numeric` and `combine_fermi` tools refuse this case outright; do the same here.
@@ -108,6 +113,9 @@ Frames tried and dropped: <frame → the prediction it got wrong>
   remove it.
 - **Cost.** Writing a model costs more than a guess. Use it when the answer matters, when
   the shape is recognizable, or when the guess has already failed twice.
-- **Unmeasured.** The v1.4 measurements cover abstention on underdetermined word problems,
-  not this act. Nothing here is evidence that formalizing improves outcomes; it is the
-  standard argument that computation beats recall on the property it checks.
+- **Barely measured.** In an exploratory Haiku probe on five hard instances, ordering this
+  act first got code run in 9 of 10 runs with 8 correct: the errors had moved from
+  arithmetic into the encoding (a retyped graph, a misremembered formula). With the copy,
+  run and sanity-check rules added, the next 10 runs ran code 10 times and were all
+  correct, against 9 of 10 for plain Haiku. Ten runs a side is a behaviour check, not
+  evidence of an accuracy gain.

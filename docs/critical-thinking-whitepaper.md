@@ -13,7 +13,7 @@ from human thinking: writing intermediate steps down. This paper argues that
 chain-of-thought was the first item taken from a much longer, better-tested library —
 the critical-thinking practices that human sciences have validated over seventy years —
 and that the rest of the library can now be systematically translated for LLM agents.
-We catalog nineteen critical-thinking *acts*, derive each from established findings in
+We catalog twenty critical-thinking *acts*, derive each from established findings in
 cognitive science, and translate them into agent capabilities. The central design
 question is the delivery vehicle. We show that the acts split cleanly along one line —
 **does the act still work when the model is being a lawyer?** Acts that survive
@@ -21,7 +21,7 @@ motivated reasoning ship as *skills* (procedures, templates, and small determini
 scripts loaded into context). Acts whose value depends on a *guarantee* — validated
 structure, judgment sourcing from uncontaminated contexts, tamper-evident records,
 enforced gates — need *machinery*: code that runs outside the model's control. We ship
-the skill tier as nineteen working skills accompanying this paper, classify every act
+the skill tier as twenty working skills accompanying this paper, classify every act
 across three tiers (skill / harness / service), and present the argLLM server — an
 implementation of Argumentative LLMs (Freedman et al. 2024) — as the worked example of
 the machinery tier. Transparency is a by-product of this architecture rather than an
@@ -217,6 +217,13 @@ usually true about thinking; what externalizing/mechanizing/contesting it buys.*
     hypothesis that must predict something checkable. The leverage is independent
     computation: no new evidence about the world, but fallible in-head work replaced on the
     property actually checked — and the solver certifies the encoding, never the modelling.
+20. **Sanity check.** Before computing from a representation you built — a formula, a
+    model file, parsed data, a table, a diagram — check the representation against what
+    must be true of it: counts and round trips against the source, units, conservation,
+    bounds, limit cases solved another way, direction under a push, and the shape's own
+    rules (angles sum to 180°, parallel lines do not meet). Two checks are mandatory: a count
+    or round trip for anything taken from a source, and an independent limit case for any
+    formula written from memory. It catches inconsistency, not a wrong choice of problem.
 
 ## 4. Two delivery vehicles — and a test for choosing
 
@@ -331,6 +338,7 @@ exact arithmetic meets continuous invented inputs, not everywhere a judgment ent
 | 4 | Assumption audit | `ct-assumption-audit` | **Full** | — | — | not needed |
 | 18 | Counterexample search | `ct-counterexample` | **Strong**; **Formal** when a complete oracle covers the frozen domain | that the search ran; encoding faithful; certificate valid | execution/solver boundary | use existing host tools; no general solver here |
 | 19 | Formalize and compute | `ct-formalize` | **Strong** for the computation; **None** for the modelling choice | that the encoding matches the situation; that inputs are not invented | execution/solver boundary | host tooling; no solver ships here |
+| 20 | Sanity check | `ct-sanity-check` | **Strong** for the invariants actually executed | that the chosen invariants are the ones that matter; that checks were independent of what they test | execution boundary | host tooling |
 | 11 | Premortem | `ct-premortem` | **Full** | tripwire follow-through | scheduler/hook watching signals | Tier 2, optional |
 | 5 | Steelman | `ct-steelman` | **Strong** | advocate blindness; symmetric effort; timestamped pre-registration | debate service, hidden channels, effort accounting | worth building |
 | 9 | Judgment panel | `ct-panel` + `aggregate.py` | **Strong** | every draw reported; that a `source` tag is true | sampling service with server-side draw log | argLLM's sampling adapter is this shape |
@@ -791,7 +799,7 @@ actually received.
 
 ## Appendix A — the shipped skill set
 
-Nineteen skills under `skills/` (symlinked as `.claude/skills` in this repository, so
+Twenty skills under `skills/` (symlinked as `.claude/skills` in this repository, so
 they are live here; copy skill directories into another project's `.claude/skills/` or
 into `~/.claude/skills/` for global use). Scripts are Python-stdlib-only.
 
@@ -804,6 +812,7 @@ into `~/.claude/skills/` for global use). Scripts are Python-stdlib-only.
 | `ct-definition-pin` | SKILL.md | operational definitions, equivocation naming |
 | `ct-reformat` | SKILL.md | representation translation catalog |
 | `ct-formalize` | SKILL.md | shape catalog, model-in-a-file, solver/enumeration/simulation, encoding attacks, discipline borrowing |
+| `ct-sanity-check` | SKILL.md | invariant catalog, mandatory count/round-trip and independent limit case, executed checks, failures kept in the record |
 | `ct-assumption-audit` | SKILL.md | premise surfacing, kill-zone triage |
 | `ct-steelman` | SKILL.md | blind symmetric advocacy + blind judging |
 | `ct-premortem` | SKILL.md | declarative-failure analysis, tripwires |

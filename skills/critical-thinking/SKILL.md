@@ -52,6 +52,7 @@ Answer normally; do not create a routing receipt merely to record that nothing r
 | a number cannot be looked up directly | `ct-question-tree` (Fermi mode) |
 | the question is an ordinary formal object in disguise: allocation, scheduling, a graph, a threshold, queues, feedback, noisy measurement | `ct-formalize` |
 | a quantitative answer is being reasoned out in prose, or the same fix keeps failing in a familiar-looking way | `ct-formalize` |
+| a result is about to be computed from a model, formula, table, diagram, or data copied out of a source | `ct-sanity-check` first |
 | a load-bearing word is contestable ("safe", "better", "significant") | `ct-definition-pin` |
 | the representation is slippery: probabilities, negations, abstractions, prose comparisons | `ct-reformat` |
 | a claim or plan rests on premises nobody stated | `ct-assumption-audit` |
@@ -86,6 +87,11 @@ act would not address a named unresolved failure, or the missing information can
 obtained. Return `UNKNOWN` or a conditional answer instead of filling the hole.
 
 ## Composition without ceremony
+
+**Check before you crunch.** Whenever any act, or your own direct work, builds a
+representation and computes an answer from it, run `ct-sanity-check` on the representation
+first — including when you recognize a formal problem and solve it inline without opening
+`ct-formalize`. Recognizing the shape is not the same as encoding it correctly.
 
 Acts compose because findings trigger the next act, not because a fixed workflow says
 so. Examples:
