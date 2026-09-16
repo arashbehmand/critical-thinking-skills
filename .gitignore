@@ -16,6 +16,9 @@ build/
 # force-add a receipt deliberately when it should be kept)
 .ct/
 
+# Local secrets (ANTHROPIC_API_KEY for bench runs)
+.env
+
 # Agent-local config (the .claude/skills symlink IS tracked)
 .claude/settings.local.json
 CLAUDE.local.md
