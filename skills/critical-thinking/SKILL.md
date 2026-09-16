@@ -50,6 +50,8 @@ Answer normally; do not create a routing receipt merely to record that nothing r
 | a universal, invariant, guarantee, or "must/never" claim could be broken by one witness | `ct-counterexample` |
 | a big or vague question invites a one-jump answer | `ct-question-tree` |
 | a number cannot be looked up directly | `ct-question-tree` (Fermi mode) |
+| the question is an ordinary formal object in disguise: allocation, scheduling, a graph, a threshold, queues, feedback, noisy measurement | `ct-formalize` |
+| a quantitative answer is being reasoned out in prose, or the same fix keeps failing in a familiar-looking way | `ct-formalize` |
 | a load-bearing word is contestable ("safe", "better", "significant") | `ct-definition-pin` |
 | the representation is slippery: probabilities, negations, abstractions, prose comparisons | `ct-reformat` |
 | a claim or plan rests on premises nobody stated | `ct-assumption-audit` |

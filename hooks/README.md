@@ -2,7 +2,7 @@
 
 Skills provide *method*. Services provide *guarantees*. Between them sits the harness:
 enforcement without domain logic — gates in the agent runtime that block a transition
-until an artifact exists. This directory is that rung, and it currently holds one hook.
+until an artifact exists. This directory is that rung, and it currently holds two hooks.
 
 Nothing here is imported by `src/ctmcp`, ships in the wheel, or calls a model. A hook is
 a standalone stdlib script the *harness* runs.
@@ -84,3 +84,34 @@ It cannot tell a real gate from a file with the right name and seven lines of
 `SKIPPED: obviously fine`. It checks that the artifact **exists**, not that the procedure
 **ran** — the fourth guarantee in the whitepaper, and precisely the gap
 `bench/process_audit/` is built to measure. Tier 2 buys locks, not virtue.
+
+
+## `controller_nudge.py` — the lock for uptake
+
+`critical-thinking` is an autonomous controller, but only if something opens it. The v1.4
+measurement says nothing does: with the skills installed and unmentioned, Haiku 4.5 opened
+one in **0 of 200 runs**. Ordered to use the controller on the same items it opened it in
+200 of 200 and scored 83.3% against 68.8% plain and 72.9% for a plain run at high effort.
+Availability is not uptake, and no wording inside a skill file can change that — the
+instruction has to arrive from outside the model.
+
+This hook runs on `UserPromptSubmit`. When the prompt's wording matches one of six narrow
+triggers (decision, estimate, diagnosis, universal claim, risk, verdict), it appends one
+line: run the controller, `NO_SCAFFOLD` is a valid outcome, do not hand the user a menu. It
+fires **at most once per session**, names no act, and writes every decision — fired or not —
+to `.ct/nudge-log.jsonl`, so the engage rate is a number from outside the model instead of
+its own account of what it did.
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {"hooks": [{"type": "command", "command": "python3 /path/to/hooks/controller_nudge.py"}]}
+    ]
+  }
+}
+```
+
+Fails open like the other hook: a malformed payload, an unreadable state file, or any
+unexpected error exits 0 with no output. It is a nudge with a log, not a gate — whether it
+closes the uptake gap is an open measurement (`bench/`, arm `hook-nudged`), not a claim.

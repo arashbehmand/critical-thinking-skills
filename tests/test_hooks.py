@@ -158,3 +158,68 @@ def test_fails_open_on_an_unreadable_transcript(tmp_path: Path) -> None:
         "stop_hook_active": False,
     }
     assert run(payload).returncode == ALLOW
+
+
+# --- controller_nudge.py: hands the controller over when the wording is consequential ----
+
+NUDGE_HOOK = Path(__file__).resolve().parent.parent / "hooks/controller_nudge.py"
+
+
+def nudge(prompt: str, tmp_path: Path, session: str = "s1") -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(NUDGE_HOOK)],
+        input=json.dumps({"prompt": prompt, "session_id": session, "cwd": str(tmp_path)}),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+@pytest.mark.parametrize(
+    ("prompt", "fires"),
+    [
+        ("Should we migrate the billing table this week?", True),
+        ("How many servers do we need for 40k requests a second?", True),
+        ("Why does the checkout keep failing after deploys?", True),
+        ("This can never happen once the lock is held, right?", True),
+        ("rename this variable to total_count", False),
+        ("what time is the standup", False),
+    ],
+)
+def test_nudge_fires_on_consequential_wording_only(
+    prompt: str, fires: bool, tmp_path: Path
+) -> None:
+    result = nudge(prompt, tmp_path)
+    assert result.returncode == 0
+    assert ("critical-thinking" in result.stdout) is fires
+    logged = [
+        json.loads(line) for line in (tmp_path / ".ct/nudge-log.jsonl").read_text().splitlines()
+    ]
+    assert logged[-1]["fired"] is fires  # every decision is logged, fired or not
+
+
+def test_nudge_fires_at_most_once_per_session(tmp_path: Path) -> None:
+    first = nudge("Should we roll back the migration?", tmp_path)
+    second = nudge("Should we roll back the other migration?", tmp_path)
+    assert "critical-thinking" in first.stdout
+    assert second.stdout.strip() == ""
+    assert (
+        nudge("Should we roll back?", tmp_path, session="s2").stdout.count("critical-thinking") == 1
+    )
+
+
+def test_nudge_fails_open_on_a_malformed_payload() -> None:
+    result = subprocess.run(
+        [sys.executable, str(NUDGE_HOOK)],
+        input="{not json",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0 and result.stdout.strip() == ""
+
+
+def test_nudge_never_names_an_act_or_asks_the_user_to_choose(tmp_path: Path) -> None:
+    out = nudge("Should we ship on Friday? Is it safe?", tmp_path).stdout
+    assert "NO_SCAFFOLD" in out and "Do not ask the user" in out
+    assert "ct-ach" not in out and "ct-premortem" not in out

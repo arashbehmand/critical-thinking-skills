@@ -2,7 +2,7 @@
 
 Critical-thinking for LLM agents, split the way the evidence says it should be:
 
-- **Recipes** (`skills/`) — eighteen Claude Code skills led by an **autonomous
+- **Recipes** (`skills/`) — nineteen Claude Code skills led by an **autonomous
   controller** that recognizes the problem shape, chooses the minimum useful act, and
   treats `NO_SCAFFOLD` as a valid route. The user describes the problem; they do not
   select techniques. Whenever a recipe needs an LLM judgment, the host spawns a **fresh
@@ -42,7 +42,7 @@ Register the math server with Claude Code:
 claude mcp add critical-thinking -- uv run --directory /path/to/critical-thinking-mcp ctmcp
 ```
 
-The MCP server advertises all eighteen recipes as `skill://` resources. A client starts
+The MCP server advertises all nineteen recipes as `skill://` resources. A client starts
 with `skill://critical-thinking/SKILL.md`; that controller silently routes the task and
 loads only the chosen act. It must not ask the user to browse or select the toolbox. The
 resources remain live inside this repo too (`.claude/skills` → `skills/`); for hosts without MCP
